@@ -3,6 +3,8 @@ import { getProfile } from '../setting/profil/actions';
 import CoaForm from './CoaForm';
 import CoaList from './CoaList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PerkiraanPage() {
   const [estimations, profile] = await Promise.all([
     getEstimations(),

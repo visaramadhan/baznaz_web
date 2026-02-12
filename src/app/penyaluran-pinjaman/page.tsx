@@ -2,6 +2,8 @@ import { getGroups, getFundSources, getLoans } from './actions';
 import { getProfile } from '../setting/profil/actions';
 import LoanForm from './LoanForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PenyaluranPage() {
   const [groups, fundSources, loans, profile] = await Promise.all([
     getGroups(),

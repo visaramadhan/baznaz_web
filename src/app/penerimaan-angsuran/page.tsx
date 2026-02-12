@@ -2,6 +2,8 @@ import { getActiveLoans, getInstallments } from './actions';
 import { getProfile } from '../setting/profil/actions';
 import InstallmentForm from './InstallmentForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PenerimaanAngsuranPage() {
   const [activeLoans, installments, profile] = await Promise.all([
     getActiveLoans(),

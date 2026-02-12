@@ -3,6 +3,8 @@ import { getProfile } from '../setting/profil/actions';
 import JournalForm from './JournalForm';
 import FormHeader from '@/components/FormHeader';
 
+export const dynamic = 'force-dynamic';
+
 export default async function JournalPage() {
   const [journals, accounts, profile] = await Promise.all([
     getJournals(),

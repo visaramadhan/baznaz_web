@@ -3,6 +3,8 @@ import { getProfile } from '../setting/profil/actions';
 import EmployeeForm from './EmployeeForm';
 import EmployeeList from './EmployeeList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DataKaryawan() {
   const [employees, profile] = await Promise.all([
     getEmployees(),

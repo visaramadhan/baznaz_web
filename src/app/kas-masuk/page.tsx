@@ -2,6 +2,8 @@ import { getAccounts, getCashInJournals } from './actions';
 import { getProfile } from '../setting/profil/actions';
 import CashInForm from './CashInForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CashInPage() {
   const accounts = await getAccounts();
   const journals = await getCashInJournals();

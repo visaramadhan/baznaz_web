@@ -2,6 +2,8 @@ import { getAccounts, getCashOutJournals } from './actions';
 import { getProfile } from '../setting/profil/actions';
 import CashOutForm from './CashOutForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CashOutPage() {
   const accounts = await getAccounts();
   const journals = await getCashOutJournals();
