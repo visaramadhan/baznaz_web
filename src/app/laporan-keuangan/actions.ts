@@ -78,7 +78,7 @@ export async function getBalanceSheetData() {
     level: 3,
     saldo_normal: 'kredit',
     balance: currentEarnings
-  });
+  } as any);
   equity.total += currentEarnings;
 
   return {
