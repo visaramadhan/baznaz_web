@@ -29,7 +29,7 @@ export async function getDashboardStats() {
   const danaProgramAccount = await Estimation.findOne({ nomor_akun: '310' }); // Assuming 310 is Dana Program/Modal
 
   // Helper to calculate balance
-  async function getBalance(accountId: string, type: 'debit' | 'credit' = 'debit') {
+  async function getBalance(accountId: any, type: 'debit' | 'credit' = 'debit') {
     if (!accountId) return 0;
     const debit = await Journal.aggregate([
       { $match: { debit_account_id: accountId } },
