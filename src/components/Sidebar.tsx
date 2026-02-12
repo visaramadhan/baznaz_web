@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Briefcase, Calculator, BookOpen, Settings, CreditCard, DollarSign, UserCog, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, Calculator, BookOpen, Settings, CreditCard, DollarSign, UserCog, ArrowDownCircle, ArrowUpCircle, PieChart } from 'lucide-react';
 import clsx from 'clsx';
 
 const menuItems = [
@@ -15,6 +15,7 @@ const menuItems = [
   { name: 'Kas Masuk', href: '/kas-masuk', icon: ArrowDownCircle },
   { name: 'Kas Keluar', href: '/kas-keluar', icon: ArrowUpCircle },
   { name: 'Jurnal Umum', href: '/laporan-jurnal', icon: Calculator },
+  { name: 'Laporan Keuangan', href: '/laporan-keuangan', icon: PieChart },
   { name: 'Manajemen User', href: '/data-user', icon: UserCog },
   { name: 'Setting', href: '/setting', icon: Settings },
 ];

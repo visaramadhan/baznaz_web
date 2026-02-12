@@ -23,8 +23,19 @@ export async function GET() {
       { nomor_akun: '210', nama: 'Kewajiban Lancar', level: 2, saldo_normal: 'kredit', induk_akun: '200' }, // Was Jangka Pendek
       { nomor_akun: '220', nama: 'Kewajiban Tetap', level: 2, saldo_normal: 'kredit', induk_akun: '200' }, // Was Jangka Panjang
       { nomor_akun: '310', nama: 'Dana Program', level: 2, saldo_normal: 'kredit', induk_akun: '300' }, // Was Saldo Dana
-      { nomor_akun: '410', nama: 'Penerimaan Lain - Lain', level: 2, saldo_normal: 'kredit', induk_akun: '400' }, // Was Penerimaan
-      { nomor_akun: '510', nama: 'Biaya', level: 2, saldo_normal: 'debet', induk_akun: '500' }, // Was Penyaluran
+      
+      // Pendapatan Categories (Level 2)
+      { nomor_akun: '410', nama: 'Pendapatan Penyaluran', level: 2, saldo_normal: 'kredit', induk_akun: '400' },
+      { nomor_akun: '420', nama: 'Penerimaan Zakat', level: 2, saldo_normal: 'kredit', induk_akun: '400' },
+      { nomor_akun: '430', nama: 'Penerimaan Infak/Sedekah', level: 2, saldo_normal: 'kredit', induk_akun: '400' },
+      { nomor_akun: '440', nama: 'Penerimaan Amil', level: 2, saldo_normal: 'kredit', induk_akun: '400' },
+      { nomor_akun: '450', nama: 'Penerimaan Non-Halal', level: 2, saldo_normal: 'kredit', induk_akun: '400' },
+
+      // Biaya/Penyaluran Categories (Level 2)
+      { nomor_akun: '510', nama: 'Penyaluran Zakat', level: 2, saldo_normal: 'debet', induk_akun: '500' },
+      { nomor_akun: '520', nama: 'Penyaluran Infak/Sedekah', level: 2, saldo_normal: 'debet', induk_akun: '500' },
+      { nomor_akun: '530', nama: 'Beban Operasional (Amil)', level: 2, saldo_normal: 'debet', induk_akun: '500' },
+      { nomor_akun: '540', nama: 'Penyaluran Non-Halal', level: 2, saldo_normal: 'debet', induk_akun: '500' },
 
       // Level 3
       { nomor_akun: '111', nama: 'Kas', level: 3, saldo_normal: 'debet', induk_akun: '110' },
@@ -33,7 +44,25 @@ export async function GET() {
       { nomor_akun: '121', nama: 'Peralatan Kantor', level: 3, saldo_normal: 'debet', induk_akun: '120' }, // New
       { nomor_akun: '211', nama: 'Kewajiban Lancar', level: 3, saldo_normal: 'kredit', induk_akun: '210' }, // New/Renamed
       { nomor_akun: '311', nama: 'Dana Program', level: 3, saldo_normal: 'kredit', induk_akun: '310' }, // Renamed
-      { nomor_akun: '411', nama: 'Penerimaan Lain - Lain', level: 3, saldo_normal: 'kredit', induk_akun: '410' }, // Renamed
+      
+      // Pendapatan Details (Level 3)
+      { nomor_akun: '411', nama: 'Pendapatan Margin', level: 3, saldo_normal: 'kredit', induk_akun: '410' },
+      { nomor_akun: '421', nama: 'Penerimaan Zakat Maal', level: 3, saldo_normal: 'kredit', induk_akun: '420' },
+      { nomor_akun: '422', nama: 'Penerimaan Zakat Fitrah', level: 3, saldo_normal: 'kredit', induk_akun: '420' },
+      { nomor_akun: '431', nama: 'Penerimaan Infak Terikat', level: 3, saldo_normal: 'kredit', induk_akun: '430' },
+      { nomor_akun: '432', nama: 'Penerimaan Infak Tidak Terikat', level: 3, saldo_normal: 'kredit', induk_akun: '430' },
+      { nomor_akun: '441', nama: 'Bagian Amil dari Zakat', level: 3, saldo_normal: 'kredit', induk_akun: '440' },
+      { nomor_akun: '442', nama: 'Bagian Amil dari Infak', level: 3, saldo_normal: 'kredit', induk_akun: '440' },
+      { nomor_akun: '451', nama: 'Bunga Bank (Non-Halal)', level: 3, saldo_normal: 'kredit', induk_akun: '450' },
+
+      // Penyaluran/Biaya Details (Level 3)
+      { nomor_akun: '511', nama: 'Penyaluran Fakir Miskin', level: 3, saldo_normal: 'debet', induk_akun: '510' },
+      { nomor_akun: '512', nama: 'Penyaluran Fisabilillah', level: 3, saldo_normal: 'debet', induk_akun: '510' },
+      { nomor_akun: '513', nama: 'Penyaluran Ibnu Sabil', level: 3, saldo_normal: 'debet', induk_akun: '510' },
+      { nomor_akun: '521', nama: 'Penyaluran Infak Sosial', level: 3, saldo_normal: 'debet', induk_akun: '520' },
+      { nomor_akun: '531', nama: 'Gaji & Tunjangan Karyawan', level: 3, saldo_normal: 'debet', induk_akun: '530' },
+      { nomor_akun: '532', nama: 'Biaya Operasional Kantor', level: 3, saldo_normal: 'debet', induk_akun: '530' },
+      { nomor_akun: '541', nama: 'Penyaluran Dana Non-Halal', level: 3, saldo_normal: 'debet', induk_akun: '540' },
     ];
 
     // Delete deprecated accounts if needed (optional, or manual cleanup)

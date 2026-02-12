@@ -3,7 +3,26 @@ import { getDashboardStats } from './actions';
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
-  const stats = await getDashboardStats();
+  let stats;
+  try {
+    stats = await getDashboardStats();
+  } catch (error) {
+    console.error("Dashboard Error:", error);
+    return (
+      <div className="p-6 text-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto">
+          <h1 className="text-2xl font-bold text-red-700 mb-2">Terjadi Kesalahan Koneksi</h1>
+          <p className="text-red-600 mb-4">
+            Gagal menghubungkan ke database. Jika Anda menggunakan MongoDB Atlas, pastikan IP Server (Vercel) sudah diizinkan (Whitelist 0.0.0.0/0).
+          </p>
+          <div className="bg-gray-800 text-white p-4 rounded text-left text-xs overflow-auto">
+            {String(error)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const { profile } = stats;
 
   return (
