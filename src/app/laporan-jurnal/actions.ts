@@ -25,11 +25,8 @@ export async function createJournal(formData: FormData) {
 
   try {
      // Generate Transaction Number
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000);
-    const nomor_transaksi = `JU-${yyyy}${mm}${dd}-${random}`;
+    const yy = String(date.getFullYear() % 100).padStart(2, '0');
+    const nomor_transaksi = `JU ${yy}${String(Math.floor(1000 + Math.random() * 9000))}`;
 
     await Journal.create({
       nomor_transaksi,

@@ -1,27 +1,63 @@
 'use client';
 
-import { useRef } from 'react';
-import { createLoan } from './actions';
+import { useRef, useState, useEffect } from 'react';
+import { createLoan, getGroupMembers } from './actions';
 import FormHeader from '@/components/FormHeader';
 
 interface Props {
   groups: any[];
-  fundSources: any[];
   profile: any;
 }
 
-export default function LoanForm({ groups, fundSources, profile }: Props) {
+export default function LoanForm({ groups, profile }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [members, setMembers] = useState<any[]>([]);
+  const [amountPerMember, setAmountPerMember] = useState(3000000);
+  const [duration, setDuration] = useState(40);
+  const [transactionNo, setTransactionNo] = useState('');
+
+  // Generate Transaction Number on Mount
+  useEffect(() => {
+    const date = new Date();
+    const yy = String(date.getFullYear() % 100).padStart(2, '0');
+    const rand4 = String(Math.floor(1000 + Math.random() * 9000));
+    setTransactionNo(`PP ${yy}${rand4}`);
+  }, []);
+
+  // Fetch Members when Group Selected
+  useEffect(() => {
+    if (selectedGroupId) {
+      getGroupMembers(selectedGroupId).then((data) => {
+        setMembers(data);
+      });
+    } else {
+      setMembers([]);
+    }
+  }, [selectedGroupId]);
 
   async function clientAction(formData: FormData) {
     const result = await createLoan(formData);
     if (result.success) {
       formRef.current?.reset();
+      setMembers([]);
+      setSelectedGroupId('');
+      // Regenerate Transaction Number
+      const date = new Date();
+      const yy = String(date.getFullYear() % 100).padStart(2, '0');
+      const rand4 = String(Math.floor(1000 + Math.random() * 9000));
+      setTransactionNo(`PP ${yy}${rand4}`);
+      
       alert('Penyaluran pinjaman berhasil dicatat');
     } else {
       alert('Gagal mencatat pinjaman: ' + result.error);
     }
   }
+
+  // Calculations
+  const totalLoan = members.length * amountPerMember;
+  const installmentPerWeek = totalLoan / duration;
+  // Removed monthly estimate display per request
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
@@ -29,40 +65,103 @@ export default function LoanForm({ groups, fundSources, profile }: Props) {
       <FormHeader title="Formulir Penyaluran Pinjaman" profile={profile} />
 
       <form ref={formRef} action={clientAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="md:col-span-2 bg-blue-50 p-4 rounded-md border border-blue-100 mb-4">
+            <label className="block text-sm font-bold text-blue-800 mb-1">Nomor Transaksi</label>
+            <input 
+                type="text" 
+                name="nomor_transaksi" 
+                value={transactionNo} 
+                readOnly 
+                className="block w-full bg-white border-blue-300 text-blue-800 font-mono font-bold rounded-md shadow-sm focus:ring-0" 
+            />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Sumber Dana</label>
+          <select name="sumber_dana" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500">
+            <option value="">-- Pilih Sumber Dana --</option>
+            <option value="Baznas RI">Baznas RI</option>
+            <option value="Dana Bergulir">Dana Bergulir</option>
+          </select>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Pilih Kelompok</label>
-          <select name="group_id" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500">
+          <select 
+            name="group_id" 
+            required 
+            value={selectedGroupId}
+            onChange={(e) => setSelectedGroupId(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+          >
             <option value="">-- Pilih Kelompok --</option>
             {groups.map((g) => (
               <option key={g._id} value={g._id}>{g.nama}</option>
             ))}
           </select>
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700">Sumber Dana</label>
-          <select name="fund_source_id" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500">
-            <option value="">-- Pilih Sumber Dana --</option>
-            {fundSources.map((f) => (
-              <option key={f._id} value={f._id}>{f.name}</option>
-            ))}
+          <label className="block text-sm font-medium text-gray-700">Jumlah Pinjaman (Per Anggota)</label>
+          <select 
+            name="jumlah_per_anggota" 
+            required 
+            value={amountPerMember}
+            onChange={(e) => setAmountPerMember(Number(e.target.value))}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+          >
+            <option value="3000000">Rp 3.000.000</option>
+            <option value="6000000">Rp 6.000.000</option>
           </select>
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700">Jumlah Pinjaman (Rp)</label>
-          <input type="number" name="jumlah" min="0" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+          <label className="block text-sm font-medium text-gray-700">Jangka Waktu</label>
+          <select 
+            name="jangka_waktu" 
+            required 
+            value={duration}
+            onChange={(e) => setDuration(Number(e.target.value))}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+          >
+            <option value="40">40 Minggu</option>
+            <option value="50">50 Minggu</option>
+          </select>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Jangka Waktu (Minggu)</label>
-          <input type="number" name="jangka_waktu" min="1" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Margin / Jasa (%)</label>
-          <input type="number" name="margin" step="0.1" min="0" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+
+        {/* Member List Display */}
+        {members.length > 0 && (
+            <div className="md:col-span-2 mt-4 border rounded-md p-4 bg-gray-50">
+                <h3 className="font-semibold text-gray-700 mb-2">Daftar Anggota Kelompok ({members.length} Anggota)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {members.map((m, idx) => (
+                        <div key={m._id} className="bg-white p-2 rounded border text-sm flex justify-between items-center">
+                            <span>{idx + 1}. {m.nama}</span>
+                            <span className="text-gray-500 text-xs">{m.jabatan || 'Anggota'}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* Calculation Summary */}
+        <div className="md:col-span-2 bg-green-50 p-4 rounded-md border border-green-200 mt-4">
+            <h3 className="font-semibold text-green-800 mb-2">Rincian Perhitungan</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p className="text-gray-600">Total Pinjaman ({members.length} x {amountPerMember.toLocaleString('id-ID')})</p>
+                    <p className="text-xl font-bold text-green-700">Rp {totalLoan.toLocaleString('id-ID')}</p>
+                </div>
+                <div>
+                    <p className="text-gray-600">Angsuran Pokok (Mingguan)</p>
+                    <p className="font-semibold">Rp {installmentPerWeek.toLocaleString('id-ID', { maximumFractionDigits: 0 })} / minggu</p>
+                </div>
+            </div>
         </div>
         
-        <div className="md:col-span-2">
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-            Simpan & Proses Jurnal
+        <div className="md:col-span-2 mt-4">
+          <button type="submit" className="w-full bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors font-medium text-lg shadow-sm">
+            Simpan & Proses Penyaluran
           </button>
         </div>
       </form>

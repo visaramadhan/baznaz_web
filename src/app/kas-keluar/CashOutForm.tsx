@@ -9,8 +9,9 @@ export default function CashOutForm({ accounts, profile }: { accounts: any[], pr
   const [error, setError] = useState('');
   
   // Filter accounts starting with 111 (Kas) or 112 (Bank)
-  // Update: User requested to include all accounts
-  const cashAccounts = accounts;
+  const cashAccounts = accounts.filter(acc => 
+    acc.nomor_akun.startsWith('111') || acc.nomor_akun.startsWith('112')
+  );
   
   // Allow all accounts as destination (contra account)
   const otherAccounts = accounts;
@@ -52,6 +53,16 @@ export default function CashOutForm({ accounts, profile }: { accounts: any[], pr
               required
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ref</label>
+            <input
+              type="text"
+              name="reference_number"
+              placeholder="Nomor Referensi (Opsional)"
+              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+            />
+          </div>
           
           <div>
              <label className="block text-sm font-medium text-gray-700 mb-1">Keluar Dari Akun (Kredit)</label>
@@ -60,6 +71,7 @@ export default function CashOutForm({ accounts, profile }: { accounts: any[], pr
                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
                required
              >
+               <option value="">-- Pilih Akun Kas/Bank --</option>
                {cashAccounts.map((acc) => (
                  <option key={acc._id} value={acc._id}>
                    {acc.nomor_akun} - {acc.nama}

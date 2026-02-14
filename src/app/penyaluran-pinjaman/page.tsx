@@ -1,13 +1,12 @@
-import { getGroups, getFundSources, getLoans } from './actions';
+import { getGroups, getLoans } from './actions';
 import { getProfile } from '../setting/profil/actions';
 import LoanForm from './LoanForm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PenyaluranPage() {
-  const [groups, fundSources, loans, profile] = await Promise.all([
+  const [groups, loans, profile] = await Promise.all([
     getGroups(),
-    getFundSources(),
     getLoans(),
     getProfile()
   ]);
@@ -16,10 +15,10 @@ export default async function PenyaluranPage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">Penyaluran Pinjaman</h1>
       
-      <LoanForm groups={groups} fundSources={fundSources} profile={profile} />
+      <LoanForm groups={groups} profile={profile} />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <h2 className="text-lg font-bold p-6 border-b">Riwayat Pinjaman</h2>
+        <h2 className="text-lg font-bold p-6 border-b">Daftar Pinjaman Kelompok</h2>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -27,7 +26,7 @@ export default async function PenyaluranPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelompok</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sumber Dana</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Pinjaman</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
             </tr>
           </thead>
@@ -51,7 +50,7 @@ export default async function PenyaluranPage() {
                     {loan.group_id?.nama || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {loan.fund_source_id?.name || 'N/A'}
+                    {loan.sumber_dana}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                     Rp {loan.jumlah.toLocaleString('id-ID')}

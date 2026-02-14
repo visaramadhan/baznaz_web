@@ -18,7 +18,7 @@ export default async function PenerimaanAngsuranPage() {
       <InstallmentForm activeLoans={activeLoans} profile={profile} />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <h2 className="text-lg font-bold p-6 border-b">Riwayat Angsuran</h2>
+        <h2 className="text-lg font-bold p-6 border-b">Daftar Piutang Kelompok & Mitra</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -26,6 +26,7 @@ export default async function PenerimaanAngsuranPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Transaksi</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelompok</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Transaksi</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Bayar</th>
               </tr>
@@ -33,7 +34,7 @@ export default async function PenerimaanAngsuranPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {installments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     Belum ada riwayat angsuran.
                   </td>
                 </tr>
@@ -48,6 +49,11 @@ export default async function PenerimaanAngsuranPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {inst.loan_id?.group_id?.nama || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${inst.jenis_transaksi === 'Tunai' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {inst.jenis_transaksi || 'Tunai'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {inst.keterangan}

@@ -15,8 +15,15 @@ export async function getAccounts() {
 export async function getCashOutJournals() {
   await dbConnect();
   
-  // Find journals created via Cash Out form (reference: 'Manual Cash Out')
-  const journals = await Journal.find({ reference: 'Manual Cash Out' })
+  // Find journals created via Cash Out form (reference: 'Manual Cash Out' or starts with KK-)
+  // Or simply filter by having a credit to a cash account? 
+  // For now, let's keep it broad or check reference
+  const journals = await Journal.find({ 
+    $or: [
+      { reference: 'Manual Cash Out' },
+      { nomor_transaksi: /^KK / }
+    ]
+  })
     .populate('debit_account_id', 'nama nomor_akun')
     .populate('credit_account_id', 'nama nomor_akun')
     .sort({ nomor_transaksi: -1, tanggal: -1 });
@@ -31,16 +38,15 @@ export async function createCashOut(formData: FormData) {
   const contra_account_id = formData.get('contra_account_id') as string;
   const amount = parseFloat(formData.get('amount') as string);
   const description = formData.get('description') as string;
+  const reference = formData.get('reference_number') as string;
   const dateStr = formData.get('date') as string;
   const date = dateStr ? new Date(dateStr) : new Date();
 
   try {
      // Generate Transaction Number
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000);
-    const nomor_transaksi = `KK-${yyyy}${mm}${dd}-${random}`;
+    const yy = String(date.getFullYear() % 100).padStart(2, '0');
+    const rand4 = String(Math.floor(1000 + Math.random() * 9000));
+    const nomor_transaksi = `KK ${yy}${rand4}`;
 
     // Cash Out: Credit Cash (Asset Decrease), Debit Expense/Asset (Asset Increase/Expense Increase)
     await Journal.create({
@@ -50,7 +56,7 @@ export async function createCashOut(formData: FormData) {
       credit_account_id: cash_account_id,
       amount,
       description,
-      reference: 'Manual Cash Out',
+      reference: reference || 'Manual Cash Out',
     });
 
     revalidatePath('/kas-keluar');

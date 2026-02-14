@@ -26,7 +26,7 @@ export default async function PerubahanDanaPage() {
     { key: 'nonhalal', title: 'DANA NONHALAL' },
   ];
 
-  const totalSurplus = Object.values(funds).reduce((sum, f) => sum + f.surplus, 0);
+  const totalSurplus = Object.values(funds).reduce((sum: number, f: any) => sum + f.surplus, 0);
 
   return (
     <div className="space-y-6">

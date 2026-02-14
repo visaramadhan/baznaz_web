@@ -7,11 +7,25 @@ import { Journal } from '@/models/Journal';
 import { Estimation } from '@/models/Estimation';
 import { revalidatePath } from 'next/cache';
 
+import { GroupMember } from '@/models/GroupMember';
+
 export async function getActiveLoans() {
   await dbConnect();
   // Populate group to show name in dropdown
   const loans = await Loan.find({ status: 'active' }).populate('group_id', 'nama');
   return JSON.parse(JSON.stringify(loans));
+}
+
+export async function getLoanDetails(loanId: string) {
+  await dbConnect();
+  const loan = await Loan.findById(loanId).populate('group_id');
+  if (!loan) return null;
+
+  const members = await GroupMember.find({ group_id: loan.group_id._id });
+  return {
+    loan: JSON.parse(JSON.stringify(loan)),
+    members: JSON.parse(JSON.stringify(members))
+  };
 }
 
 export async function getInstallments() {
@@ -29,22 +43,22 @@ export async function createInstallment(formData: FormData) {
   await dbConnect();
   
   const loan_id = formData.get('loan_id') as string;
+  const jenis_transaksi = formData.get('jenis_transaksi') as string;
   const jumlah_bayar = parseFloat(formData.get('jumlah_bayar') as string);
   const keterangan = formData.get('keterangan') as string;
 
   try {
     // Generate Nomor Transaksi
     const date = new Date();
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000);
-    const nomor_transaksi = `AG-${yyyy}${mm}${dd}-${random}`;
+    const yy = String(date.getFullYear() % 100).padStart(2, '0');
+    const rand4 = String(Math.floor(1000 + Math.random() * 9000));
+    const nomor_transaksi = `PA ${yy}${rand4}`; // Penerimaan Angsuran
 
     // 1. Create Installment
     const installment = await Installment.create({
       nomor_transaksi,
       loan_id,
+      jenis_transaksi,
       jumlah_bayar,
       tanggal_bayar: date,
       keterangan,
@@ -52,21 +66,33 @@ export async function createInstallment(formData: FormData) {
 
     // 2. Create Journal (Accounting)
     // Find Accounts
-    const accountKas = await Estimation.findOne({ nomor_akun: '111' }); // Kas
-    const accountPiutang = await Estimation.findOne({ nomor_akun: '113' }); // Piutang Mitra (was 112, fixed to 113)
+    let debitAccount;
+    if (jenis_transaksi === 'Tunai') {
+        debitAccount = await Estimation.findOne({ nomor_akun: '111' }); // Kas
+    } else {
+        debitAccount = await Estimation.findOne({ nomor_akun: '112' }); // Bank (Assuming 112 is Bank)
+        // If 112 doesn't exist, try to find ANY bank account or create one?
+        // Let's assume 112 is Bank for now, or fallback to 111 if not strict.
+        // But user specifically asked for Bank option.
+    }
+    
+    const creditAccount = await Estimation.findOne({ nomor_akun: '113' }); // Piutang Mitra
 
-    if (!accountKas || !accountPiutang) {
-      throw new Error('Akun COA Kas (111) atau Piutang Mitra (113) tidak ditemukan.');
+    if (!debitAccount) {
+        throw new Error(`Akun COA untuk ${jenis_transaksi} (111/112) tidak ditemukan.`);
+    }
+    if (!creditAccount) {
+        throw new Error('Akun COA Piutang Mitra (113) tidak ditemukan.');
     }
 
-    // Transaction: Debit Kas (Uang masuk), Kredit Piutang (Aset berkurang)
-    const journal_no = `JU-${yyyy}${mm}${dd}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Transaction: Debit Kas/Bank (Uang masuk), Kredit Piutang (Aset berkurang)
+    const journal_no = `PA ${yy}${String(Math.floor(1000 + Math.random() * 9000))}`;
     
     await Journal.create({
       nomor_transaksi: journal_no,
       tanggal: new Date(),
-      debit_account_id: accountKas._id,
-      credit_account_id: accountPiutang._id,
+      debit_account_id: debitAccount._id,
+      credit_account_id: creditAccount._id,
       amount: jumlah_bayar,
       description: `Angsuran Pinjaman - Loan #${loan_id} - ${keterangan}`,
       reference: installment._id.toString(),

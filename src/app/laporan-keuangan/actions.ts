@@ -7,8 +7,8 @@ import { Estimation } from '@/models/Estimation';
 export async function getBalanceSheetData() {
   await dbConnect();
 
-  // 1. Get all Level 3 accounts (Detail accounts)
-  const accounts = await Estimation.find({ level: 3 }).sort({ nomor_akun: 1 });
+  // 1. Get all Level 4 accounts (Transaction accounts)
+  const accounts = await Estimation.find({ level: 4 }).sort({ nomor_akun: 1 });
 
   // 2. Calculate balances for each account
   const accountBalances = await Promise.all(accounts.map(async (acc) => {
@@ -21,8 +21,8 @@ export async function getBalanceSheetData() {
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
 
-    const totalDebit = debitResult[0]?.total || 0;
-    const totalCredit = creditResult[0]?.total || 0;
+    const totalDebit = (debitResult[0]?.total || 0) + (acc.debet || 0);
+    const totalCredit = (creditResult[0]?.total || 0) + (acc.kredit || 0);
 
     let balance = 0;
     if (acc.saldo_normal === 'debet') {
@@ -95,7 +95,7 @@ export async function getAssetChangesData() {
   // Find accounts related to ZISWAF funds
   // We look for accounts starting with 3 (Dana)
   const fundAccounts = await Estimation.find({ 
-    level: 3, 
+    level: 4, 
     nomor_akun: { $regex: /^3/ } 
   }).sort({ nomor_akun: 1 });
 
@@ -114,7 +114,7 @@ export async function getAssetChangesData() {
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     
-    const saldoAwal = (initialCredit[0]?.total || 0) - (initialDebit[0]?.total || 0); // Assuming Credit normal for Funds
+    const saldoAwal = ((initialCredit[0]?.total || 0) + (acc.kredit || 0)) - ((initialDebit[0]?.total || 0) + (acc.debet || 0)); // Assuming Credit normal for Funds
 
     // 2. Penambahan (Credit during period)
     const addition = await Journal.aggregate([
@@ -147,62 +147,13 @@ export async function getAssetChangesData() {
 
 export async function getFundChangesData() {
   await dbConnect();
-
-  // 1. Get all Revenue (4xx) and Expense (5xx) accounts
-  const accounts = await Estimation.find({
-    level: 3,
-    $or: [
-      { nomor_akun: { $regex: /^4/ } },
-      { nomor_akun: { $regex: /^5/ } }
-    ]
-  }).sort({ nomor_akun: 1 });
-
-  // 2. Calculate balances (Activity for the period)
-  // Assuming current year for now
-  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-
-  const accountBalances = await Promise.all(accounts.map(async (acc) => {
-    const debitResult = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, tanggal: { $gte: startOfYear } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const creditResult = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, tanggal: { $gte: startOfYear } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-
-    const totalDebit = debitResult[0]?.total || 0;
-    const totalCredit = creditResult[0]?.total || 0;
-
-    let balance = 0;
-    // Revenue (4xx) is Credit normal
-    if (acc.nomor_akun.startsWith('4')) {
-      balance = totalCredit - totalDebit;
-    }
-    // Expense (5xx) is Debit normal
-    else {
-      balance = totalDebit - totalCredit;
-    }
-
-    return {
-      ...acc.toObject(),
-      balance
-    };
-  }));
-
-  // 3. Group by Fund Type
+  
+  // Helper to categorize accounts
   const categorize = (acc: any) => {
     // Priority 1: Check Account Number Prefix (Level 2 Parent)
-    // Zakat: 42x (Rev), 51x (Exp)
     if (acc.nomor_akun.startsWith('42') || acc.nomor_akun.startsWith('51')) return 'zakat';
-    
-    // Infak: 43x (Rev), 52x (Exp)
     if (acc.nomor_akun.startsWith('43') || acc.nomor_akun.startsWith('52')) return 'infak';
-    
-    // Amil: 41x (Margin), 44x (Rev), 53x (Exp)
     if (acc.nomor_akun.startsWith('41') || acc.nomor_akun.startsWith('44') || acc.nomor_akun.startsWith('53')) return 'amil';
-    
-    // Non-Halal: 45x (Rev), 54x (Exp)
     if (acc.nomor_akun.startsWith('45') || acc.nomor_akun.startsWith('54')) return 'nonhalal';
 
     // Priority 2: Fallback to Name Check (Legacy support)
@@ -212,10 +163,49 @@ export async function getFundChangesData() {
     if (name.includes('amil')) return 'amil';
     if (name.includes('nonhalal') || name.includes('non halal') || name.includes('bunga')) return 'nonhalal';
     
-    return 'amil'; // Default to Amil/Operational for generic revenues/expenses
+    return 'amil';
   };
 
-  const funds: Record<string, { revenues: any[], expenses: any[], surplus: number }> = {
+  // Get all revenue (4) and expense (5) accounts
+  const accounts = await Estimation.find({
+    level: 4,
+    $or: [
+      { nomor_akun: { $regex: /^4/ } },
+      { nomor_akun: { $regex: /^5/ } }
+    ]
+  }).sort({ nomor_akun: 1 });
+
+  const accountBalances = await Promise.all(accounts.map(async (acc) => {
+    const debitResult = await Journal.aggregate([
+      { $match: { debit_account_id: acc._id } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const creditResult = await Journal.aggregate([
+      { $match: { credit_account_id: acc._id } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+
+    const totalDebit = (debitResult[0]?.total || 0) + (acc.debet || 0);
+    const totalCredit = (creditResult[0]?.total || 0) + (acc.kredit || 0);
+
+    // For revenue (Kredit normal), balance = Credit - Debit
+    // For expense (Debet normal), balance = Debit - Credit
+    let balance = 0;
+    if (acc.saldo_normal === 'debet') {
+      balance = totalDebit - totalCredit;
+    } else {
+      balance = totalCredit - totalDebit;
+    }
+
+    return {
+      ...acc.toObject(),
+      balance,
+      category: categorize(acc)
+    };
+  }));
+
+  // Group by category
+  const funds: any = {
     zakat: { revenues: [], expenses: [], surplus: 0 },
     infak: { revenues: [], expenses: [], surplus: 0 },
     amil: { revenues: [], expenses: [], surplus: 0 },
@@ -223,21 +213,162 @@ export async function getFundChangesData() {
   };
 
   accountBalances.forEach(acc => {
-    const category = categorize(acc);
-    // Safety check if category exists (it should based on categorize logic)
-    if (funds[category]) {
-      const type = acc.nomor_akun.startsWith('4') ? 'revenues' : 'expenses';
-      funds[category][type].push(acc);
-    }
+    const type = acc.nomor_akun.startsWith('4') ? 'revenues' : 'expenses';
+    funds[acc.category][type].push(acc);
   });
 
-  // Calculate Surplus
+  // Calculate surplus for each fund
   Object.keys(funds).forEach(key => {
-    const f = funds[key];
-    const totalRev = f.revenues.reduce((s: number, a: any) => s + a.balance, 0);
-    const totalExp = f.expenses.reduce((s: number, a: any) => s + a.balance, 0);
-    f.surplus = totalRev - totalExp;
+    const rev = funds[key].revenues.reduce((sum: number, a: any) => sum + a.balance, 0);
+    const exp = funds[key].expenses.reduce((sum: number, a: any) => sum + a.balance, 0);
+    funds[key].surplus = rev - exp;
   });
 
   return funds;
+}
+
+export async function getGeneralLedgerData(accountId: string, startDate: string, endDate: string) {
+  await dbConnect();
+  
+  const account = await Estimation.findById(accountId);
+  if (!account) throw new Error('Account not found');
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
+
+  // 1. Calculate Opening Balance
+  const debitBefore = await Journal.aggregate([
+    { $match: { debit_account_id: account._id, tanggal: { $lt: start } } },
+    { $group: { _id: null, total: { $sum: '$amount' } } }
+  ]);
+  const creditBefore = await Journal.aggregate([
+    { $match: { credit_account_id: account._id, tanggal: { $lt: start } } },
+    { $group: { _id: null, total: { $sum: '$amount' } } }
+  ]);
+
+  const totalDebitBefore = (debitBefore[0]?.total || 0) + (account.debet || 0);
+  const totalCreditBefore = (creditBefore[0]?.total || 0) + (account.kredit || 0);
+  
+  let openingBalance = 0;
+  if (account.saldo_normal === 'debet') {
+    openingBalance = totalDebitBefore - totalCreditBefore;
+  } else {
+    openingBalance = totalCreditBefore - totalDebitBefore;
+  }
+
+  // 2. Get Transactions
+  const journals = await Journal.find({
+    $or: [
+      { debit_account_id: account._id },
+      { credit_account_id: account._id }
+    ],
+    tanggal: { $gte: start, $lte: end }
+  })
+  .populate('debit_account_id', 'nama nomor_akun')
+  .populate('credit_account_id', 'nama nomor_akun')
+  .sort({ tanggal: 1, createdAt: 1 });
+
+  // 3. Format Transactions and Calculate Running Balance
+  let currentBalance = openingBalance;
+  const transactions = journals.map((journal: any) => {
+    const isDebit = journal.debit_account_id._id.toString() === account._id.toString();
+    const debitAmount = isDebit ? journal.amount : 0;
+    const creditAmount = !isDebit ? journal.amount : 0;
+
+    if (account.saldo_normal === 'debet') {
+      currentBalance += (debitAmount - creditAmount);
+    } else {
+      currentBalance += (creditAmount - debitAmount);
+    }
+
+    return {
+      _id: journal._id,
+      date: journal.tanggal,
+      description: journal.description || '-',
+      ref: journal.nomor_transaksi,
+      contra_account: isDebit ? journal.credit_account_id.nama : journal.debit_account_id.nama,
+      debit: debitAmount,
+      credit: creditAmount,
+      balance: currentBalance
+    };
+  });
+
+  return {
+    account: JSON.parse(JSON.stringify(account)),
+    openingBalance,
+    transactions: JSON.parse(JSON.stringify(transactions))
+  };
+}
+
+export async function getTrialBalanceData(startDate: string, endDate: string) {
+  await dbConnect();
+  
+  const targetDate = new Date(endDate);
+  targetDate.setHours(23, 59, 59, 999);
+
+  // Fetch Level 4 accounts (Transaction Accounts)
+  const accounts = await Estimation.find({ level: 4 }).sort({ nomor_akun: 1 });
+
+  const data = await Promise.all(accounts.map(async (acc) => {
+    // 1. Get Journal Movements up to target date (endDate)
+    // Note: We calculate the balance AS OF endDate. The startDate is essentially ignored for the balance calculation
+    // because Neraca Saldo typically shows the accumulated balance at a specific point in time.
+    // If the user expects movements only within the range, that would be a different report (Neraca Lajur / Mutasi).
+    // Given the columns requested (Debit, Credit), it implies Balance.
+    
+    const debitResult = await Journal.aggregate([
+      { $match: { debit_account_id: acc._id, tanggal: { $lte: targetDate } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    const creditResult = await Journal.aggregate([
+      { $match: { credit_account_id: acc._id, tanggal: { $lte: targetDate } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+
+    const journalDebit = debitResult[0]?.total || 0;
+    const journalCredit = creditResult[0]?.total || 0;
+    
+    // 2. Combine with Opening Balances from Estimation (Saldo Awal Manual)
+    // Note: acc.debet and acc.kredit are the manual opening balances
+    const initialDebit = acc.debet || 0;
+    const initialCredit = acc.kredit || 0;
+
+    const totalDebit = initialDebit + journalDebit;
+    const totalCredit = initialCredit + journalCredit;
+    
+    let debit = 0;
+    let credit = 0;
+    
+    // Calculate Net Balance
+    if (acc.saldo_normal === 'debet') {
+        const net = totalDebit - totalCredit;
+        if (net >= 0) debit = net;
+        else credit = Math.abs(net); // Should ideally be negative debit, but presentation-wise credit column
+    } else {
+        const net = totalCredit - totalDebit;
+        if (net >= 0) credit = net;
+        else debit = Math.abs(net);
+    }
+
+    return {
+      ...acc.toObject(),
+      debit,
+      credit
+    };
+  }));
+
+  const activeAccounts = data.filter(d => d.debit !== 0 || d.credit !== 0);
+
+  return {
+    accounts: JSON.parse(JSON.stringify(activeAccounts)),
+    totalDebit: activeAccounts.reduce((sum, a) => sum + a.debit, 0),
+    totalCredit: activeAccounts.reduce((sum, a) => sum + a.credit, 0),
+  };
+}
+
+export async function getAllAccounts() {
+  await dbConnect();
+  const accounts = await Estimation.find({ level: 4 }).sort({ nomor_akun: 1 });
+  return JSON.parse(JSON.stringify(accounts));
 }

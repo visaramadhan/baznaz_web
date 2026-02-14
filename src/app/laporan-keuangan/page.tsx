@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileText, PieChart, TrendingUp } from 'lucide-react';
+import { FileText, PieChart, TrendingUp, Book, Scale } from 'lucide-react';
 import { getProfile } from '../setting/profil/actions';
 import FormHeader from '@/components/FormHeader';
 
@@ -45,6 +45,54 @@ export default async function LaporanKeuanganPage() {
             <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Perubahan Dana</h2>
             <p className="text-gray-500 text-sm">
               Menampilkan arus penerimaan dan penyaluran dana zakat, infak, dan amil.
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/laporan-keuangan/buku-besar" className="block group">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-orange-500 transition-all flex flex-col items-center text-center h-full">
+            <div className="bg-orange-100 p-4 rounded-full mb-4 group-hover:bg-orange-200 transition-colors">
+              <Book className="w-8 h-8 text-orange-700" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Buku Besar</h2>
+            <p className="text-gray-500 text-sm">
+              Menampilkan rincian transaksi per akun perkiraan dalam periode tertentu.
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/laporan-keuangan/neraca-saldo" className="block group">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-teal-500 transition-all flex flex-col items-center text-center h-full">
+            <div className="bg-teal-100 p-4 rounded-full mb-4 group-hover:bg-teal-200 transition-colors">
+              <Scale className="w-8 h-8 text-teal-700" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Neraca Saldo</h2>
+            <p className="text-gray-500 text-sm">
+              Menampilkan ringkasan saldo debit dan kredit seluruh akun per tanggal.
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/laporan-keuangan/daftar-jurnal" className="block group">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-gray-500 transition-all flex flex-col items-center text-center h-full">
+            <div className="bg-gray-100 p-4 rounded-full mb-4 group-hover:bg-gray-200 transition-colors">
+              <Book className="w-8 h-8 text-gray-700" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Daftar Jurnal</h2>
+            <p className="text-gray-500 text-sm">
+              Menampilkan daftar jurnal dengan filter tanggal dan rincian akun.
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/laporan-piutang" className="block group">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-indigo-500 transition-all flex flex-col items-center text-center h-full">
+            <div className="bg-indigo-100 p-4 rounded-full mb-4 group-hover:bg-indigo-200 transition-colors">
+              <FileText className="w-8 h-8 text-indigo-700" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Piutang</h2>
+            <p className="text-gray-500 text-sm">
+              Menampilkan daftar piutang, angsuran, dan saldo per kelompok.
             </p>
           </div>
         </Link>

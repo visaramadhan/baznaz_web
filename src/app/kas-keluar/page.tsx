@@ -17,7 +17,7 @@ export default async function CashOutPage() {
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Riwayat Kas Keluar</h3>
+          <h3 className="text-lg font-medium text-gray-900">Daftar Kas Keluar</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -25,16 +25,19 @@ export default async function CashOutPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Transaksi</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ref</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keluar Dari</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Untuk Akun</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debet (Nama Akun)</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debet (No. Akun)</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kredit (Nama Akun)</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kredit (No. Akun)</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah (Rp)</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {journals.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
                     Belum ada data kas keluar.
                   </td>
                 </tr>
@@ -48,13 +51,22 @@ export default async function CashOutPage() {
                       {new Date(j.tanggal).toLocaleDateString('id-ID')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {j.reference || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {j.description}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {j.credit_account_id ? `${j.credit_account_id.nomor_akun} - ${j.credit_account_id.nama}` : <span className="text-red-500 italic">(Akun Terhapus)</span>}
+                      {j.debit_account_id ? j.debit_account_id.nama : <span className="text-red-500 italic">(Akun Terhapus)</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {j.debit_account_id ? `${j.debit_account_id.nomor_akun} - ${j.debit_account_id.nama}` : <span className="text-red-500 italic">(Akun Terhapus)</span>}
+                      {j.debit_account_id ? j.debit_account_id.nomor_akun : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {j.credit_account_id ? j.credit_account_id.nama : <span className="text-red-500 italic">(Akun Terhapus)</span>}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {j.credit_account_id ? j.credit_account_id.nomor_akun : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium text-red-600">
                       - Rp {j.amount.toLocaleString('id-ID')}

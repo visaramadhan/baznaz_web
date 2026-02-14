@@ -20,45 +20,81 @@ export async function getMembers(groupId: string) {
 export async function createMember(groupId: string, formData: FormData) {
   await dbConnect();
   
+  const no_anggota = formData.get('no_anggota') as string;
   const nama = formData.get('nama') as string;
-  const ktp = formData.get('ktp') as string;
-  const jabatan_di_kelompok = formData.get('jabatan_di_kelompok') as string;
+  const jabatan = formData.get('jabatan') as string;
+  const jenis_kelamin = formData.get('jenis_kelamin') as string;
+  const tanggal_lahir = formData.get('tanggal_lahir') as string;
+  const alamat = formData.get('alamat') as string;
+  const no_telp = formData.get('no_telp') as string;
+
+  // Validate required fields
+  if (!no_anggota || !nama || !jabatan || !jenis_kelamin || !tanggal_lahir || !alamat || !no_telp) {
+    return { success: false, error: 'Semua field harus diisi' };
+  }
+
+  // Validate date format
+  if (isNaN(Date.parse(tanggal_lahir))) {
+    return { success: false, error: 'Format tanggal lahir tidak valid' };
+  }
 
   try {
     await GroupMember.create({
       group_id: groupId,
+      no_anggota,
       nama,
-      ktp,
-      jabatan_di_kelompok,
+      jabatan,
+      jenis_kelamin,
+      tanggal_lahir,
+      alamat,
+      no_telp,
     });
     
     revalidatePath(`/data-kelompok/${groupId}`);
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create member:', error);
-    return { success: false, error: 'Failed to create member' };
+    return { success: false, error: error.message };
   }
 }
 
 export async function updateMember(id: string, groupId: string, formData: FormData) {
   await dbConnect();
   
+  const no_anggota = formData.get('no_anggota') as string;
   const nama = formData.get('nama') as string;
-  const ktp = formData.get('ktp') as string;
-  const jabatan_di_kelompok = formData.get('jabatan_di_kelompok') as string;
+  const jabatan = formData.get('jabatan') as string;
+  const jenis_kelamin = formData.get('jenis_kelamin') as string;
+  const tanggal_lahir = formData.get('tanggal_lahir') as string;
+  const alamat = formData.get('alamat') as string;
+  const no_telp = formData.get('no_telp') as string;
+
+  // Validate required fields
+  if (!no_anggota || !nama || !jabatan || !jenis_kelamin || !tanggal_lahir || !alamat || !no_telp) {
+    return { success: false, error: 'Semua field harus diisi' };
+  }
+
+  // Validate date format
+  if (isNaN(Date.parse(tanggal_lahir))) {
+    return { success: false, error: 'Format tanggal lahir tidak valid' };
+  }
 
   try {
     await GroupMember.findByIdAndUpdate(id, {
+      no_anggota,
       nama,
-      ktp,
-      jabatan_di_kelompok,
+      jabatan,
+      jenis_kelamin,
+      tanggal_lahir,
+      alamat,
+      no_telp,
     });
     
     revalidatePath(`/data-kelompok/${groupId}`);
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to update member:', error);
-    return { success: false, error: 'Failed to update member' };
+    return { success: false, error: error.message };
   }
 }
 
@@ -68,8 +104,8 @@ export async function deleteMember(id: string, groupId: string) {
     await GroupMember.findByIdAndDelete(id);
     revalidatePath(`/data-kelompok/${groupId}`);
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to delete member:', error);
-    return { success: false, error: 'Failed to delete member' };
+    return { success: false, error: error.message };
   }
 }

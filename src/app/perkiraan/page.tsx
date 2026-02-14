@@ -1,7 +1,6 @@
 import { getEstimations } from './actions';
 import { getProfile } from '../setting/profil/actions';
-import CoaForm from './CoaForm';
-import CoaList from './CoaList';
+import PerkiraanManager from './PerkiraanManager';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,12 +10,5 @@ export default async function PerkiraanPage() {
     getProfile()
   ]);
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Daftar Perkiraan (Chart of Accounts)</h1>
-      
-      <CoaForm profile={profile} />
-      <CoaList estimations={estimations} />
-    </div>
-  );
+  return <PerkiraanManager estimations={estimations} profile={profile} />;
 }

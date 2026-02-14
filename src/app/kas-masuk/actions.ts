@@ -15,8 +15,13 @@ export async function getAccounts() {
 export async function getCashInJournals() {
   await dbConnect();
   
-  // Find journals created via Cash In form (reference: 'Manual Cash In')
-  const journals = await Journal.find({ reference: 'Manual Cash In' })
+  // Find journals created via Cash In form (reference: 'Manual Cash In' or starts with KM-)
+  const journals = await Journal.find({ 
+    $or: [
+      { reference: 'Manual Cash In' },
+      { nomor_transaksi: /^KM / }
+    ]
+  })
     .populate('debit_account_id', 'nama nomor_akun')
     .populate('credit_account_id', 'nama nomor_akun')
     .sort({ nomor_transaksi: -1, tanggal: -1 });
@@ -31,16 +36,15 @@ export async function createCashIn(formData: FormData) {
   const contra_account_id = formData.get('contra_account_id') as string;
   const amount = parseFloat(formData.get('amount') as string);
   const description = formData.get('description') as string;
+  const reference = formData.get('reference_number') as string;
   const dateStr = formData.get('date') as string;
   const date = dateStr ? new Date(dateStr) : new Date();
 
   try {
      // Generate Transaction Number
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000);
-    const nomor_transaksi = `KM-${yyyy}${mm}${dd}-${random}`;
+    const yy = String(date.getFullYear() % 100).padStart(2, '0');
+    const rand4 = String(Math.floor(1000 + Math.random() * 9000));
+    const nomor_transaksi = `KM ${yy}${rand4}`;
 
     await Journal.create({
       nomor_transaksi,
@@ -49,7 +53,7 @@ export async function createCashIn(formData: FormData) {
       credit_account_id: contra_account_id,
       amount,
       description,
-      reference: 'Manual Cash In',
+      reference: reference || 'Manual Cash In',
     });
 
     revalidatePath('/kas-masuk');

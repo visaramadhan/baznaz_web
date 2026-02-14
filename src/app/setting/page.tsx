@@ -24,9 +24,9 @@ export default function SettingPage() {
             <div className="bg-blue-100 p-4 rounded-full mb-4 group-hover:bg-blue-200 transition-colors">
               <Calculator className="w-8 h-8 text-blue-700" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Setting Perkiraan Transaksi</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Setting Awal</h2>
             <p className="text-gray-500 text-sm">
-              Atur saldo awal perkiraan dan transaksi penyesuaian (Setting Awal).
+              Atur akun perkiraan default untuk transaksi penyaluran dan pembayaran.
             </p>
           </div>
         </Link>
