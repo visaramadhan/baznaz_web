@@ -75,10 +75,10 @@ export default function MemberList({ members, groupId }: { members: Member[], gr
                       <div>
                         <label className="text-xs font-medium text-gray-500">Jabatan</label>
                         <select name="jabatan" defaultValue={member.jabatan} className="w-full border p-1 rounded">
-                          <option value="Anggota">Anggota</option>
                           <option value="Ketua">Ketua</option>
                           <option value="Sekretaris">Sekretaris</option>
                           <option value="Bendahara">Bendahara</option>
+                          <option value="Anggota">Anggota</option>
                         </select>
                       </div>
                       <div>

@@ -31,10 +31,10 @@ export default function MemberForm({ groupId }: { groupId: string }) {
         <div>
           <label className="block text-sm font-medium text-gray-700">Jabatan</label>
           <select name="jabatan" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500">
-            <option value="Anggota">Anggota</option>
             <option value="Ketua">Ketua</option>
             <option value="Sekretaris">Sekretaris</option>
             <option value="Bendahara">Bendahara</option>
+            <option value="Anggota">Anggota</option>
           </select>
         </div>
         <div>

@@ -57,6 +57,7 @@ export default function LoanForm({ groups, profile }: Props) {
   // Calculations
   const totalLoan = members.length * amountPerMember;
   const installmentPerWeek = totalLoan / duration;
+  const perMemberInstallment = amountPerMember / duration;
   // Removed monthly estimate display per request
 
   return (
@@ -131,17 +132,33 @@ export default function LoanForm({ groups, profile }: Props) {
 
         {/* Member List Display */}
         {members.length > 0 && (
-            <div className="md:col-span-2 mt-4 border rounded-md p-4 bg-gray-50">
-                <h3 className="font-semibold text-gray-700 mb-2">Daftar Anggota Kelompok ({members.length} Anggota)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {members.map((m, idx) => (
-                        <div key={m._id} className="bg-white p-2 rounded border text-sm flex justify-between items-center">
-                            <span>{idx + 1}. {m.nama}</span>
-                            <span className="text-gray-500 text-xs">{m.jabatan || 'Anggota'}</span>
-                        </div>
-                    ))}
-                </div>
+          <div className="md:col-span-2 bg-blue-50 p-4 rounded-md border border-blue-100 mb-4">
+            <h3 className="font-semibold text-blue-800 mb-2">Daftar Anggota Kelompok</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-blue-200">
+                <thead className="bg-blue-100">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">No</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Nama</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Pinjaman</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Lama</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Angsuran</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-blue-100">
+                  {members.map((m, idx) => (
+                    <tr key={m._id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{idx + 1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{m.nama}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">Rp {amountPerMember.toLocaleString('id-ID')}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">{duration} Minggu</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-800">Rp {perMemberInstallment.toLocaleString('id-ID', { maximumFractionDigits: 0 })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          </div>
         )}
 
         {/* Calculation Summary */}

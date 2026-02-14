@@ -10,6 +10,7 @@ export interface ILoan extends Document {
   angsuran_per_minggu: number;
   status: 'pending' | 'active' | 'paid' | 'bad';
   tanggal_akad: Date;
+  allocations?: { member_id: mongoose.Types.ObjectId, amount: number }[];
 }
 
 const LoanSchema: Schema = new Schema({
@@ -22,6 +23,7 @@ const LoanSchema: Schema = new Schema({
   angsuran_per_minggu: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'active', 'paid', 'bad'], default: 'pending' },
   tanggal_akad: { type: Date, default: Date.now },
+  allocations: [{ member_id: { type: Schema.Types.ObjectId, ref: 'GroupMember' }, amount: Number }],
 }, { timestamps: true });
 
 export const Loan: Model<ILoan> = mongoose.models.Loan || mongoose.model<ILoan>('Loan', LoanSchema);

@@ -33,11 +33,32 @@ export default function EmployeeForm({ profile }: { profile: any }) {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Jabatan</label>
-          <input type="text" name="jabatan" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+          <select name="jabatan" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500">
+            <option value="">-- Pilih Jabatan --</option>
+            <option value="Manager">Manager</option>
+            <option value="Keuangan">Keuangan</option>
+            <option value="Operasional">Operasional</option>
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Mulai Bekerja</label>
           <input type="date" name="mulai_bekerja" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+          <input type="date" name="tanggal_lahir" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Pendidikan</label>
+          <input type="text" name="pendidikan" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700">Alamat</label>
+          <input type="text" name="alamat" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">No. HP</label>
+          <input type="text" name="no_hp" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Email</label>

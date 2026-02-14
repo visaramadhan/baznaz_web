@@ -161,7 +161,8 @@ export async function createEstimation(formData: FormData) {
 export async function updateEstimation(id: string, formData: FormData) {
   await dbConnect();
   
-  const nomor_akun = formData.get('nomor_akun') as string;
+  const nomor_akun_raw = formData.get('nomor_akun') as string;
+  const nomor_akun = (nomor_akun_raw || '').trim();
   const nama = formData.get('nama') as string;
   const level = parseInt(formData.get('level') as string);
   const saldo_normal = formData.get('saldo_normal') as string;
@@ -173,8 +174,7 @@ export async function updateEstimation(id: string, formData: FormData) {
   const kredit = parseFloat(formData.get('kredit') as string || '0');
 
   try {
-    await Estimation.findByIdAndUpdate(id, {
-      nomor_akun,
+    const updateData: any = {
       nama,
       level,
       saldo_normal,
@@ -184,7 +184,11 @@ export async function updateEstimation(id: string, formData: FormData) {
       ref_level_3: ref_level_3 || undefined,
       debet,
       kredit
-    });
+    };
+    if (nomor_akun) {
+      updateData.nomor_akun = nomor_akun;
+    }
+    await Estimation.findByIdAndUpdate(id, updateData);
     
     revalidatePath('/perkiraan');
     return { success: true };

@@ -8,13 +8,13 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Filter accounts starting with 111 (Kas) or 112 (Bank)
-  const cashAccounts = accounts.filter(acc => 
-    acc.nomor_akun.startsWith('111') || acc.nomor_akun.startsWith('112')
+  const cashAccounts = accounts.filter(
+    (acc) =>
+      typeof acc?.nomor_akun === 'string' &&
+      (acc.nomor_akun.startsWith('111') || acc.nomor_akun.startsWith('112'))
   );
   
-  // Allow all accounts as source (contra account)
-  const otherAccounts = accounts;
+  const otherAccounts = accounts.filter((acc) => typeof acc?.nomor_akun === 'string');
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);

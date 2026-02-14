@@ -9,6 +9,7 @@ import { FundSource } from '@/models/FundSource';
 import { revalidatePath } from 'next/cache';
 
 import { GroupMember } from '@/models/GroupMember';
+import { TransactionSetting } from '@/models/TransactionSetting';
 
 export async function getGroups() {
   await dbConnect();
@@ -18,7 +19,7 @@ export async function getGroups() {
 
 export async function getGroupMembers(groupId: string) {
   await dbConnect();
-  const members = await GroupMember.find({ group_id: groupId });
+  const members = await GroupMember.find({ group_id: groupId }).sort({ no_anggota: 1 });
   return JSON.parse(JSON.stringify(members));
 }
 
@@ -47,6 +48,9 @@ export async function createLoan(formData: FormData) {
     const jumlah = jumlah_per_anggota * memberCount;
     const angsuran_per_minggu = jumlah / jangka_waktu;
 
+    const members = await GroupMember.find({ group_id });
+    const allocations = members.map((m: any) => ({ member_id: m._id, amount: jumlah_per_anggota }));
+
     // 1. Create Loan
     const loan = await Loan.create({
       nomor_transaksi,
@@ -58,26 +62,31 @@ export async function createLoan(formData: FormData) {
       angsuran_per_minggu,
       status: 'active',
       tanggal_akad: new Date(),
+      allocations,
     });
 
-    // 2. Create Journal (Accounting)
-    // Find Accounts
-    // For Disbursement: Credit Kas (111) or Bank (112), Debit Piutang (113)
-    // Based on Source?
-    // User said: "Sumber dana; Baznas RI, Dana Bergulir". 
-    // Usually Baznas RI funds might come from a specific account, and Dana Bergulir from another.
-    // But for now, let's stick to the previous logic but handle the "Sumber Dana" logic if needed.
-    // The previous code used Account 111 (Kas).
-    // Let's keep using Kas (111) for now unless specified.
-    
-    const accountKas = await Estimation.findOne({ nomor_akun: '111' }); // Kas
-    const accountPiutang = await Estimation.findOne({ nomor_akun: '113' }); // Piutang Mitra
+    // 2. Create Journal (Accounting) based on Transaction Setting
+    const type = sumber_dana === 'Baznas RI' ? 'penyaluran_baznas' : 'penyaluran_bergulir';
+    const setting = await TransactionSetting.findOne({ type })
+      .populate('debit_account_id')
+      .populate('credit_account_id');
 
-    if (!accountKas || !accountPiutang) {
-      throw new Error('Akun COA Kas (111) atau Piutang Mitra (113) tidak ditemukan.');
+    let debitAccountId: any = null;
+    let creditAccountId: any = null;
+    if (setting) {
+      debitAccountId = (setting as any).debit_account_id?._id;
+      creditAccountId = (setting as any).credit_account_id?._id;
+    }
+    if (!debitAccountId || !creditAccountId) {
+      const fallbackDebit = await Estimation.findOne({ nomor_akun: '113' });
+      const fallbackCredit = await Estimation.findOne({ nomor_akun: '311' });
+      if (!fallbackDebit || !fallbackCredit) {
+        throw new Error('Setting penyaluran tidak ditemukan dan akun fallback (113/311) tidak tersedia.');
+      }
+      debitAccountId = fallbackDebit._id;
+      creditAccountId = fallbackCredit._id;
     }
 
-    // Transaction: Kredit Kas (Uang keluar), Debit Piutang (Aset bertambah)
     const date = new Date();
     const yy = String(date.getFullYear() % 100).padStart(2, '0');
     const journal_no = `PP ${yy}${String(Math.floor(1000 + Math.random() * 9000))}`;
@@ -85,8 +94,8 @@ export async function createLoan(formData: FormData) {
     await Journal.create({
       nomor_transaksi: journal_no,
       tanggal: new Date(),
-      debit_account_id: accountPiutang._id,
-      credit_account_id: accountKas._id,
+      debit_account_id: debitAccountId,
+      credit_account_id: creditAccountId,
       amount: jumlah,
       description: `Penyaluran Pinjaman - ${sumber_dana} - ${nomor_transaksi}`,
       reference: loan._id.toString(),

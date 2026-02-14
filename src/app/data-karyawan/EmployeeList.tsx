@@ -61,7 +61,11 @@ export default function EmployeeList({ employees }: { employees: Employee[] }) {
                     <form action={(formData) => handleUpdate(emp._id, formData)} className="flex flex-wrap gap-2 items-center">
                       <input name="nip" defaultValue={emp.nip} className="border p-1 rounded w-20" placeholder="NIP" required />
                       <input name="name" defaultValue={emp.name} className="border p-1 rounded w-32" placeholder="Nama" required />
-                      <input name="jabatan" defaultValue={emp.jabatan} className="border p-1 rounded w-24" placeholder="Jabatan" required />
+                      <select name="jabatan" defaultValue={emp.jabatan} className="border p-1 rounded w-28" required>
+                        <option value="Manager">Manager</option>
+                        <option value="Keuangan">Keuangan</option>
+                        <option value="Operasional">Operasional</option>
+                      </select>
                       <input name="email" defaultValue={emp.email} className="border p-1 rounded w-32" placeholder="Email" />
                       <input 
                         name="mulai_bekerja" 
@@ -70,6 +74,10 @@ export default function EmployeeList({ employees }: { employees: Employee[] }) {
                         className="border p-1 rounded w-32" 
                         required 
                       />
+                      <input name="tanggal_lahir" type="date" className="border p-1 rounded w-36" placeholder="Tanggal Lahir" />
+                      <input name="pendidikan" className="border p-1 rounded w-32" placeholder="Pendidikan" />
+                      <input name="alamat" className="border p-1 rounded w-48" placeholder="Alamat" />
+                      <input name="no_hp" className="border p-1 rounded w-32" placeholder="No. HP" />
                       <div className="flex gap-1 ml-auto">
                         <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded text-xs">Simpan</button>
                         <button type="button" onClick={() => setEditingId(null)} className="bg-gray-300 text-gray-700 px-3 py-1 rounded text-xs">Batal</button>

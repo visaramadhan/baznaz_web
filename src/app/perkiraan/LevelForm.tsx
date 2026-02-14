@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { createEstimation, updateEstimation } from './actions';
 import { X } from 'lucide-react';
 
@@ -14,6 +15,7 @@ interface LevelFormProps {
 export default function LevelForm({ isOpen, onClose, estimations, initialData }: LevelFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [levelType, setLevelType] = useState<number>(1); // 1, 2, or 3
+  const router = useRouter();
 
   useEffect(() => {
     if (isOpen) {
@@ -45,6 +47,7 @@ export default function LevelForm({ isOpen, onClose, estimations, initialData }:
     
     if (result.success) {
       formRef.current?.reset();
+      router.refresh();
       alert(initialData ? 'Level berhasil diperbarui' : 'Level berhasil ditambahkan');
       onClose();
     } else {
@@ -95,7 +98,7 @@ export default function LevelForm({ isOpen, onClose, estimations, initialData }:
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 mb-4">
+        <form ref={formRef} action={clientAction} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nomor Level</label>
             <input 
@@ -107,9 +110,6 @@ export default function LevelForm({ isOpen, onClose, estimations, initialData }:
               required 
             />
           </div>
-        </div>
-
-        <form ref={formRef} action={clientAction} className="space-y-4">
           
           <div>
             <label className="block text-sm font-medium text-gray-700">Nama Level</label>

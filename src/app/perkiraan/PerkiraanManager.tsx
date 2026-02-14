@@ -11,7 +11,7 @@ import { seedLevels } from './seed';
 
 export default function PerkiraanManager({ estimations, profile }: { estimations: any[], profile: any }) {
   const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
-  const [isPerkiraanFormOpen, setIsPerkiraanFormOpen] = useState(false);
+  const [isPerkiraanFormOpen, setIsPerkiraanFormOpen] = useState(true);
   const [isLevelListOpen, setIsLevelListOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<any>(null);
 
@@ -58,13 +58,7 @@ export default function PerkiraanManager({ estimations, profile }: { estimations
               <Layers className="w-4 h-4" />
               Tambah Sub Level
             </button>
-            <button 
-              onClick={openNewPerkiraan}
-              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Tambah Perkiraan
-            </button>
+            
         </div>
       </div>
 

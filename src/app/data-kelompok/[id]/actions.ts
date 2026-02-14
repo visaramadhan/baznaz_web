@@ -13,7 +13,7 @@ export async function getGroup(id: string) {
 
 export async function getMembers(groupId: string) {
   await dbConnect();
-  const members = await GroupMember.find({ group_id: groupId }).sort({ createdAt: -1 });
+  const members = await GroupMember.find({ group_id: groupId }).sort({ no_anggota: 1 });
   return JSON.parse(JSON.stringify(members));
 }
 

@@ -158,7 +158,8 @@ export default function PerkiraanForm({ isOpen, onClose, estimations, initialDat
                 name="nama" 
                 defaultValue={initialData?.nama}
                 required 
-                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" 
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+                autoFocus 
             />
           </div>
 
