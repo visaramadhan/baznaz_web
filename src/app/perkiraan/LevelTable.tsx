@@ -31,6 +31,7 @@ export default function LevelTable({ estimations, onEdit }: LevelTableProps) {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Level</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Level</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
@@ -47,6 +48,7 @@ export default function LevelTable({ estimations, onEdit }: LevelTableProps) {
                     Level {level.level}
                   </span>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{level.nomor_akun || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{level.nama}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                   <button 

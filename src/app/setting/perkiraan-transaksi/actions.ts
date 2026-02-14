@@ -8,7 +8,8 @@ import { revalidatePath } from 'next/cache';
 
 export async function getAccounts() {
   await dbConnect();
-  const accounts = await Estimation.find({ level: { $gte: 3 } }).sort({ nomor_akun: 1 });
+  // Ambil hanya akun level 4 (akun transaksi) dari data Perkiraan
+  const accounts = await Estimation.find({ level: 4 }).sort({ nomor_akun: 1 });
   return JSON.parse(JSON.stringify(accounts));
 }
 

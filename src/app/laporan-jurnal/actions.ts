@@ -7,8 +7,8 @@ import { revalidatePath } from 'next/cache';
 
 export async function getAccounts() {
   await dbConnect();
-  // Get all level 3 accounts
-  const accounts = await Estimation.find({ level: 3 }).sort({ nomor_akun: 1 });
+  // Ambil seluruh daftar perkiraan agar opsi sesuai halaman Perkiraan
+  const accounts = await Estimation.find({}).sort({ nomor_akun: 1 });
   return JSON.parse(JSON.stringify(accounts));
 }
 

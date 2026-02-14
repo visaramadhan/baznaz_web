@@ -36,11 +36,6 @@ export default function LevelForm({ isOpen, onClose, estimations, initialData }:
         formData.set('saldo_normal', initialData?.saldo_normal || 'debet');
     }
 
-    // Keep existing nomor_akun if editing, or let backend generate/handle it
-    if (initialData) {
-        formData.set('nomor_akun', initialData.nomor_akun);
-    }
-
     let result;
     if (initialData) {
         result = await updateEstimation(initialData._id, formData);
@@ -100,12 +95,25 @@ export default function LevelForm({ isOpen, onClose, estimations, initialData }:
           </div>
         </div>
 
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Nomor Level</label>
+            <input 
+              type="text" 
+              name="nomor_akun" 
+              defaultValue={initialData?.nomor_akun || ''} 
+              placeholder={levelType === 1 ? 'Contoh: 1xx' : levelType === 2 ? 'Contoh: 21x' : 'Contoh: 113'}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+              required 
+            />
+          </div>
+        </div>
+
         <form ref={formRef} action={clientAction} className="space-y-4">
           
           <div>
             <label className="block text-sm font-medium text-gray-700">Nama Level</label>
             <input 
-                type="text" 
                 name="nama" 
                 defaultValue={initialData?.nama}
                 required 
