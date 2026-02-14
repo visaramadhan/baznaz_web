@@ -43,7 +43,7 @@ export async function getReceivableReportData(startDate: string, endDate: string
   const inRangeMap = new Map(installmentsInRange.map(i => [i._id.toString(), i]));
 
   const groupIds = loans
-    .map((l: any) => l.group_id?._id)
+    .map((l: any) => (l as any).group_id?._id)
     .filter(Boolean);
 
   const members = await GroupMember.find({ group_id: { $in: groupIds } });
@@ -57,7 +57,7 @@ export async function getReceivableReportData(startDate: string, endDate: string
   const reportData = loans.map((loan) => {
     const toDate = toDateMap.get(loan._id.toString()) || { totalPaidToDate: 0, countToDate: 0 };
     const inRange = inRangeMap.get(loan._id.toString()) || { totalPaidInRange: 0, countInRange: 0 };
-    const groupIdStr = loan.group_id?._id?.toString?.() || '';
+    const groupIdStr = ((loan as any).group_id?._id?.toString?.()) || '';
     const groupMembers = (membersByGroup.get(groupIdStr) || []).sort((a, b) => (a.no_anggota || '').localeCompare(b.no_anggota || ''));
 
     const balance = loan.jumlah - toDate.totalPaidToDate;
@@ -67,8 +67,8 @@ export async function getReceivableReportData(startDate: string, endDate: string
 
     return {
       _id: loan._id.toString(),
-      no_kelompok: loan.group_id?.nomor || '-',
-      nama_kelompok: loan.group_id?.nama || 'Unknown Group',
+      no_kelompok: (loan as any).group_id?.nomor || '-',
+      nama_kelompok: (loan as any).group_id?.nama || 'Unknown Group',
       jumlah_pinjaman: loan.jumlah,
       angsuran_ke: toDate.countToDate,
       jumlah_angsuran: inRange.totalPaidInRange,
