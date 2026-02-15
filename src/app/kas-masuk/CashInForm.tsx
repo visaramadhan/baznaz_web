@@ -7,6 +7,14 @@ import FormHeader from '@/components/FormHeader';
 export default function CashInForm({ accounts, profile }: { accounts: any[], profile: any }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [amountDisplay, setAmountDisplay] = useState('');
+  const [amountValue, setAmountValue] = useState(0);
+  function onAmountChange(v: string) {
+    const digits = v.replace(/\D/g, '');
+    const num = digits ? Number(digits) : 0;
+    setAmountValue(num);
+    setAmountDisplay(digits ? `Rp. ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}` : '');
+  }
   
   const cashAccounts = accounts.filter(
     (acc) =>
@@ -99,13 +107,15 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah (Rp)</label>
             <input
-              type="number"
-              name="amount"
-              min="0"
-              step="0.01"
+              type="text"
+              name="amount_display"
+              placeholder="Rp. 0"
+              value={amountDisplay}
+              onChange={(e) => onAmountChange(e.target.value)}
               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
               required
             />
+            <input type="hidden" name="amount" value={amountValue} />
           </div>
         </div>
 

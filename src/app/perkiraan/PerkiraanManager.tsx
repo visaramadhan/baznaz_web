@@ -11,7 +11,6 @@ import { seedLevels } from './seed';
 
 export default function PerkiraanManager({ estimations, profile }: { estimations: any[], profile: any }) {
   const [isLevelFormOpen, setIsLevelFormOpen] = useState(false);
-  const [isPerkiraanFormOpen, setIsPerkiraanFormOpen] = useState(true);
   const [isLevelListOpen, setIsLevelListOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<any>(null);
 
@@ -19,18 +18,12 @@ export default function PerkiraanManager({ estimations, profile }: { estimations
     // Separate handling for Perkiraan (Level 4) and Master Levels (1-3)
     if (account.level === 4) {
         setEditingAccount(account);
-        setIsPerkiraanFormOpen(true);
     } else {
         setEditingAccount(account);
         setIsLevelFormOpen(true);
         // If editing from the list modal, we might want to keep it open or close it?
         // Let's keep it open, but the form will appear on top (z-index should handle this)
     }
-  };
-
-  const openNewPerkiraan = () => {
-    setEditingAccount(null);
-    setIsPerkiraanFormOpen(true);
   };
 
   const openNewLevel = () => {
@@ -58,9 +51,19 @@ export default function PerkiraanManager({ estimations, profile }: { estimations
               <Layers className="w-4 h-4" />
               Tambah Sub Level
             </button>
-            
         </div>
       </div>
+
+      {/* Inline Perkiraan Form */}
+      <section>
+        <PerkiraanForm 
+          isOpen={true}
+          onClose={() => setEditingAccount(null)}
+          estimations={estimations}
+          initialData={editingAccount}
+          inline
+        />
+      </section>
 
       {/* Section 1: Master Levels Table (Removed from main view) */}
       
@@ -103,15 +106,7 @@ export default function PerkiraanManager({ estimations, profile }: { estimations
         initialData={editingAccount} 
       />
 
-      <PerkiraanForm 
-        isOpen={isPerkiraanFormOpen} 
-        onClose={() => {
-            setIsPerkiraanFormOpen(false);
-            setEditingAccount(null);
-        }} 
-        estimations={estimations}
-        initialData={editingAccount}
-      />
+      {/* Modal Perkiraan Form removed in favor of inline form */}
     </div>
   );
 }

@@ -7,8 +7,8 @@ import { revalidatePath } from 'next/cache';
 
 export async function getAccounts() {
   await dbConnect();
-  // Get all accounts (removed level restriction to ensure all potential transaction accounts are available)
-  const accounts = await Estimation.find({}).sort({ nomor_akun: 1 });
+  // Hanya tampilkan akun transaksi yang diinput (sembunyikan Level 1-3)
+  const accounts = await Estimation.find({ level: 4 }).sort({ nomor_akun: 1 });
   return JSON.parse(JSON.stringify(accounts));
 }
 

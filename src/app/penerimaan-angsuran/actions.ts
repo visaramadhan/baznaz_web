@@ -8,6 +8,7 @@ import { Estimation } from '@/models/Estimation';
 import { revalidatePath } from 'next/cache';
 
 import { GroupMember } from '@/models/GroupMember';
+import '@/models/Group';
 
 export async function getActiveLoans() {
   await dbConnect();

@@ -14,7 +14,21 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
   const [selectedLoanId, setSelectedLoanId] = useState('');
   const [loanDetails, setLoanDetails] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
-  const [amount, setAmount] = useState<number>(0);
+  const [amountValue, setAmountValue] = useState<number>(0);
+  const [amountDisplay, setAmountDisplay] = useState<string>('');
+
+  function formatNumberToDisplay(n: number) {
+    if (!n) return '';
+    const s = Math.floor(n).toString();
+    const f = s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return `Rp. ${f}`;
+  }
+  function onAmountChange(v: string) {
+    const digits = v.replace(/\D/g, '');
+    const num = digits ? Number(digits) : 0;
+    setAmountValue(num);
+    setAmountDisplay(digits ? `Rp. ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}` : '');
+  }
 
   useEffect(() => {
     if (selectedLoanId) {
@@ -22,13 +36,16 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
         if (data) {
           setLoanDetails(data.loan);
           setMembers(data.members);
-          setAmount(data.loan.angsuran_per_minggu || 0);
+          const val = data.loan.angsuran_per_minggu || 0;
+          setAmountValue(val);
+          setAmountDisplay(formatNumberToDisplay(val));
         }
       });
     } else {
       setLoanDetails(null);
       setMembers([]);
-      setAmount(0);
+      setAmountValue(0);
+      setAmountDisplay('');
     }
   }, [selectedLoanId]);
 
@@ -39,7 +56,8 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
       setSelectedLoanId('');
       setLoanDetails(null);
       setMembers([]);
-      setAmount(0);
+      setAmountValue(0);
+      setAmountDisplay('');
       alert('Angsuran berhasil dicatat');
     } else {
       alert('Gagal mencatat angsuran: ' + result.error);
@@ -82,32 +100,59 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
 
         {/* Info Kelompok & Anggota */}
         {loanDetails && (
-            <div className="md:col-span-2 bg-gray-50 p-4 rounded-md border border-gray-200">
-                <p className="font-semibold text-gray-800">Detail Pinjaman:</p>
-                <p className="text-sm text-gray-600">Nama Kelompok: <span className="font-medium text-gray-900">{loanDetails.group_id?.nama}</span></p>
-                <div className="mt-2">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Daftar Anggota:</p>
-                    <ul className="list-disc list-inside text-sm text-gray-600 grid grid-cols-2 gap-1">
-                        {members.map((m: any) => (
-                            <li key={m._id}>{m.nama} ({m.jabatan})</li>
-                        ))}
-                    </ul>
-                </div>
+          <div className="md:col-span-2 bg-blue-50 p-4 rounded-md border border-blue-100">
+            <p className="font-semibold text-blue-800">Daftar Anggota Kelompok</p>
+            <div className="overflow-x-auto mt-2">
+              <table className="min-w-full divide-y divide-blue-200">
+                <thead className="bg-blue-100">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">No</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Nama</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Pinjaman</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Lama</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider">Angsuran</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-blue-100">
+                  {members.map((m, idx) => {
+                    const loanPerMember = loanDetails?.jumlah_per_anggota || 0;
+                    const duration = loanDetails?.jangka_waktu || 1;
+                    const perMember = duration ? Math.floor(loanPerMember / duration) : 0;
+                    return (
+                      <tr key={m._id}>
+                        <td className="px-6 py-3 text-sm text-blue-800">{idx + 1}</td>
+                        <td className="px-6 py-3 text-sm text-blue-800">{m.nama}</td>
+                        <td className="px-6 py-3 text-sm text-blue-800">
+                          Rp {loanPerMember.toLocaleString('id-ID')}
+                        </td>
+                        <td className="px-6 py-3 text-sm text-blue-800">
+                          {duration} Minggu
+                        </td>
+                        <td className="px-6 py-3 text-sm text-blue-800">
+                          Rp {perMember.toLocaleString('id-ID')}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
+          </div>
         )}
 
-        {/* Jumlah Bayar (Auto-filled but editable) */}
+        {/* Jumlah Bayar */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Jumlah Bayar (Rp)</label>
-          <input 
-            type="number" 
-            name="jumlah_bayar" 
-            min="0" 
-            required 
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" 
+          <input
+            type="text"
+            name="jumlah_bayar_display"
+            placeholder="Rp. 0"
+            value={amountDisplay}
+            onChange={(e) => onAmountChange(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+            required
           />
+          <input type="hidden" name="jumlah_bayar" value={amountValue} />
         </div>
 
         <div>

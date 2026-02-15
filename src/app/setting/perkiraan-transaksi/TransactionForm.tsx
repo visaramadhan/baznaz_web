@@ -1,10 +1,18 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { createInitialJournal } from './actions';
 
 export default function TransactionForm({ accounts }: { accounts: any[] }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const [amountDisplay, setAmountDisplay] = useState('');
+  const [amountValue, setAmountValue] = useState(0);
+  function onAmountChange(v: string) {
+    const digits = v.replace(/\D/g, '');
+    const num = digits ? Number(digits) : 0;
+    setAmountValue(num);
+    setAmountDisplay(digits ? `Rp. ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}` : '');
+  }
 
   async function clientAction(formData: FormData) {
     const result = await createInitialJournal(formData);
@@ -46,7 +54,16 @@ export default function TransactionForm({ accounts }: { accounts: any[] }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Jumlah (Rp)</label>
-          <input type="number" name="amount" required min="0" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+          <input 
+            type="text" 
+            name="amount_display" 
+            placeholder="Rp. 0"
+            value={amountDisplay}
+            onChange={(e) => onAmountChange(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" 
+            required
+          />
+          <input type="hidden" name="amount" value={amountValue} />
         </div>
 
         <div>
