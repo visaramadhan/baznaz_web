@@ -16,6 +16,8 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
   const [members, setMembers] = useState<any[]>([]);
   const [amountValue, setAmountValue] = useState<number>(0);
   const [amountDisplay, setAmountDisplay] = useState<string>('');
+  const [transactionNo, setTransactionNo] = useState<string>('');
+  const [referenceNo, setReferenceNo] = useState<string>('');
 
   function formatNumberToDisplay(n: number) {
     if (!n) return '';
@@ -50,6 +52,13 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
   }, [selectedLoanId]);
 
   async function clientAction(formData: FormData) {
+    if (!transactionNo.trim()) {
+      alert('Nomor transaksi wajib diisi');
+      return;
+    }
+    formData.set('nomor_transaksi', transactionNo.trim());
+    formData.set('reference_number', referenceNo.trim());
+
     const result = await createInstallment(formData);
     if (result.success) {
       formRef.current?.reset();
@@ -58,6 +67,8 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
       setMembers([]);
       setAmountValue(0);
       setAmountDisplay('');
+      setTransactionNo('');
+      setReferenceNo('');
       alert('Angsuran berhasil dicatat');
     } else {
       alert('Gagal mencatat angsuran: ' + result.error);
@@ -70,6 +81,19 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
       <FormHeader title="Formulir Penerimaan Angsuran" profile={profile} />
       
       <form ref={formRef} action={clientAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700">Nomor Transaksi</label>
+          <input
+            type="text"
+            name="nomor_transaksi"
+            placeholder="Contoh: PA 268001"
+            value={transactionNo}
+            onChange={(e) => setTransactionNo(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+            required
+          />
+        </div>
+
         {/* Jenis Transaksi */}
         <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700">Jenis Transaksi</label>
@@ -158,6 +182,18 @@ export default function InstallmentForm({ activeLoans, profile }: Props) {
         <div>
           <label className="block text-sm font-medium text-gray-700">Keterangan</label>
           <input type="text" name="keterangan" placeholder="Angsuran ke-..." className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Nomor Ref</label>
+          <input
+            type="text"
+            name="reference_number"
+            placeholder="Contoh: PA"
+            value={referenceNo}
+            onChange={(e) => setReferenceNo(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+          />
         </div>
         
         <div className="md:col-span-2">

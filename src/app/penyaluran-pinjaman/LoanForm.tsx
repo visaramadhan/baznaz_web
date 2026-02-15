@@ -17,14 +17,6 @@ export default function LoanForm({ groups, profile }: Props) {
   const [duration, setDuration] = useState(40);
   const [transactionNo, setTransactionNo] = useState('');
 
-  // Generate Transaction Number on Mount
-  useEffect(() => {
-    const date = new Date();
-    const yy = String(date.getFullYear() % 100).padStart(2, '0');
-    const rand4 = String(Math.floor(1000 + Math.random() * 9000));
-    setTransactionNo(`PP ${yy}${rand4}`);
-  }, []);
-
   // Fetch Members when Group Selected
   useEffect(() => {
     if (selectedGroupId) {
@@ -37,16 +29,18 @@ export default function LoanForm({ groups, profile }: Props) {
   }, [selectedGroupId]);
 
   async function clientAction(formData: FormData) {
+    if (!transactionNo.trim()) {
+      alert('Nomor transaksi wajib diisi');
+      return;
+    }
+    formData.set('nomor_transaksi', transactionNo.trim());
+
     const result = await createLoan(formData);
     if (result.success) {
       formRef.current?.reset();
       setMembers([]);
       setSelectedGroupId('');
-      // Regenerate Transaction Number
-      const date = new Date();
-      const yy = String(date.getFullYear() % 100).padStart(2, '0');
-      const rand4 = String(Math.floor(1000 + Math.random() * 9000));
-      setTransactionNo(`PP ${yy}${rand4}`);
+      setTransactionNo('');
       
       alert('Penyaluran pinjaman berhasil dicatat');
     } else {
@@ -67,14 +61,26 @@ export default function LoanForm({ groups, profile }: Props) {
 
       <form ref={formRef} action={clientAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2 bg-blue-50 p-4 rounded-md border border-blue-100 mb-4">
-            <label className="block text-sm font-bold text-blue-800 mb-1">Nomor Transaksi</label>
-            <input 
-                type="text" 
-                name="nomor_transaksi" 
-                value={transactionNo} 
-                readOnly 
-                className="block w-full bg-white border-blue-300 text-blue-800 font-mono font-bold rounded-md shadow-sm focus:ring-0" 
-            />
+          <label className="block text-sm font-bold text-blue-800 mb-1">Nomor Transaksi</label>
+          <input 
+            type="text" 
+            name="nomor_transaksi" 
+            placeholder="Contoh: PP 268001"
+            value={transactionNo}
+            onChange={(e) => setTransactionNo(e.target.value)}
+            className="block w-full bg-white border-blue-300 text-blue-800 font-mono font-bold rounded-md shadow-sm focus:ring-0" 
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Nomor Ref</label>
+          <input
+            type="text"
+            name="reference_number"
+            placeholder="Contoh: PP"
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500"
+          />
         </div>
 
         <div>

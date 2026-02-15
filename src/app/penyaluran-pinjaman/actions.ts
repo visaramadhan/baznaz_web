@@ -31,6 +31,7 @@ export async function createLoan(formData: FormData) {
   const jumlah_per_anggota = parseFloat(formData.get('jumlah_per_anggota') as string);
   const jangka_waktu = parseInt(formData.get('jangka_waktu') as string);
   const nomor_transaksi = formData.get('nomor_transaksi') as string;
+  const reference = (formData.get('reference_number') as string) || '';
 
   try {
     // Check if Transaction Number already exists
@@ -89,16 +90,14 @@ export async function createLoan(formData: FormData) {
 
     const date = new Date();
     const yy = String(date.getFullYear() % 100).padStart(2, '0');
-    const journal_no = `PP ${yy}${String(Math.floor(1000 + Math.random() * 9000))}`;
-    
     await Journal.create({
-      nomor_transaksi: journal_no,
+      nomor_transaksi,
       tanggal: new Date(),
       debit_account_id: debitAccountId,
       credit_account_id: creditAccountId,
       amount: jumlah,
       description: `Penyaluran Pinjaman - ${sumber_dana} - ${nomor_transaksi}`,
-      reference: loan._id.toString(),
+      reference: reference || loan._id.toString(),
     });
 
     revalidatePath('/penyaluran-pinjaman');
@@ -113,6 +112,6 @@ export async function getLoans() {
     await dbConnect();
     const loans = await Loan.find({})
         .populate('group_id', 'nama')
-        .sort({ nomor_transaksi: -1, tanggal_akad: -1 });
+        .sort({ nomor_transaksi: 1 });
     return JSON.parse(JSON.stringify(loans));
 }

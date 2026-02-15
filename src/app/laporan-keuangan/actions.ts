@@ -13,11 +13,11 @@ export async function getBalanceSheetData() {
   // 2. Calculate balances for each account
   const accountBalances = await Promise.all(accounts.map(async (acc) => {
     const debitResult = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id } },
+      { $match: { debit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const creditResult = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id } },
+      { $match: { credit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
 
@@ -106,11 +106,11 @@ export async function getAssetChangesData() {
     
     // 1. Saldo Awal (Balance before start of year)
     const initialDebit = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, tanggal: { $lt: startOfYear } } },
+      { $match: { debit_account_id: acc._id, tanggal: { $lt: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const initialCredit = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, tanggal: { $lt: startOfYear } } },
+      { $match: { credit_account_id: acc._id, tanggal: { $lt: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     
@@ -118,14 +118,14 @@ export async function getAssetChangesData() {
 
     // 2. Penambahan (Credit during period)
     const addition = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, tanggal: { $gte: startOfYear } } },
+      { $match: { credit_account_id: acc._id, tanggal: { $gte: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const penambahan = addition[0]?.total || 0;
 
     // 3. Pengurangan (Debit during period)
     const deduction = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, tanggal: { $gte: startOfYear } } },
+      { $match: { debit_account_id: acc._id, tanggal: { $gte: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const pengurangan = deduction[0]?.total || 0;
@@ -177,11 +177,11 @@ export async function getFundChangesData() {
 
   const accountBalances = await Promise.all(accounts.map(async (acc) => {
     const debitResult = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id } },
+      { $match: { debit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const creditResult = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id } },
+      { $match: { credit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
 
@@ -239,11 +239,11 @@ export async function getGeneralLedgerData(accountId: string, startDate: string,
 
   // 1. Calculate Opening Balance
   const debitBefore = await Journal.aggregate([
-    { $match: { debit_account_id: account._id, tanggal: { $lt: start } } },
+    { $match: { debit_account_id: account._id, tanggal: { $lt: start }, nomor_transaksi: { $not: /^PA / } } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
   ]);
   const creditBefore = await Journal.aggregate([
-    { $match: { credit_account_id: account._id, tanggal: { $lt: start } } },
+    { $match: { credit_account_id: account._id, tanggal: { $lt: start }, nomor_transaksi: { $not: /^PA / } } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
   ]);
 
@@ -263,7 +263,8 @@ export async function getGeneralLedgerData(accountId: string, startDate: string,
       { debit_account_id: account._id },
       { credit_account_id: account._id }
     ],
-    tanggal: { $gte: start, $lte: end }
+    tanggal: { $gte: start, $lte: end },
+    nomor_transaksi: { $not: /^PA / }
   })
   .populate('debit_account_id', 'nama nomor_akun')
   .populate('credit_account_id', 'nama nomor_akun')
@@ -318,11 +319,11 @@ export async function getTrialBalanceData(startDate: string, endDate: string) {
     // Given the columns requested (Debit, Credit), it implies Balance.
     
     const debitResult = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, tanggal: { $lte: targetDate } } },
+      { $match: { debit_account_id: acc._id, tanggal: { $lte: targetDate }, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const creditResult = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, tanggal: { $lte: targetDate } } },
+      { $match: { credit_account_id: acc._id, tanggal: { $lte: targetDate }, nomor_transaksi: { $not: /^PA / } } },
       { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
 

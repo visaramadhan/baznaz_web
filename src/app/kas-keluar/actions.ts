@@ -26,7 +26,7 @@ export async function getCashOutJournals() {
   })
     .populate('debit_account_id', 'nama nomor_akun')
     .populate('credit_account_id', 'nama nomor_akun')
-    .sort({ nomor_transaksi: -1, tanggal: -1 });
+    .sort({ nomor_transaksi: 1 });
     
   return JSON.parse(JSON.stringify(journals));
 }
@@ -41,13 +41,9 @@ export async function createCashOut(formData: FormData) {
   const reference = formData.get('reference_number') as string;
   const dateStr = formData.get('date') as string;
   const date = dateStr ? new Date(dateStr) : new Date();
+  const nomor_transaksi = formData.get('nomor_transaksi') as string;
 
   try {
-     // Generate Transaction Number
-    const yy = String(date.getFullYear() % 100).padStart(2, '0');
-    const rand4 = String(Math.floor(1000 + Math.random() * 9000));
-    const nomor_transaksi = `KK ${yy}${rand4}`;
-
     // Cash Out: Credit Cash (Asset Decrease), Debit Expense/Asset (Asset Increase/Expense Increase)
     await Journal.create({
       nomor_transaksi,

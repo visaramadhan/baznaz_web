@@ -73,7 +73,6 @@ export default function SettingItem({ title, type, accounts, currentSetting }: S
         </div>
       </form>
 
-      {/* Result Table */}
       {currentSetting && (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -86,43 +85,17 @@ export default function SettingItem({ title, type, accounts, currentSetting }: S
               </tr>
             </thead>
             <tbody className="bg-blue-50 divide-y divide-gray-200">
-              {/* Credit Row (as per screenshot example, typically Credit is source? Wait. Screenshot shows: 
-                  1. Kredit 112 Kas
-                  2. Debet 113 Pinjaman
-                  Usually in accounting Debet is first. But the screenshot has "1. Kredit ... 2. Debet".
-                  Wait, let's look closer at the screenshot.
-                  "Penyaluran Dana Baznas RI"
-                  Row 1: Kredit, 112, Kas di Bank Nagari
-                  Row 2: Debet, 113, Pinjaman Qardh
-                  This makes sense: Money goes OUT of Bank (Credit Asset) and INTO Loan (Debit Asset/Expense).
-                  
-                  "Penyaluran Dana Bergulir"
-                  Row 1: Kredit, 112, Kas...
-                  Row 2: Debet, 113, Pinjaman...
-                  
-                  "Pembayaran Transfer Bank"
-                  Row 1: Kredit, 113, Pinjaman Qardh (This is payment FROM user? If so, Loan decreases (Credit Asset) and Bank increases (Debit Asset). 
-                  Wait. "Pembayaran Transfer Bank" -> usually means Receiving payment via bank? Or paying someone?
-                  "Pembayaran angsuran oleh mitra" -> User input text says "pembayaran angsuran oleh mitra".
-                  If mitra pays installment:
-                  Cash/Bank INCREASES (Debit)
-                  Loan Receivable DECREASES (Credit)
-                  Screenshot shows:
-                  Row 1: Kredit, 113, Pinjaman Qardh
-                  Row 2: Debet, 112, Kas di Bank Nagari
-                  So yes: Credit Loan, Debit Bank.
-              */}
               <tr>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Kredit</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{currentSetting.credit_account_id?.nomor_akun}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{currentSetting.credit_account_id?.nama}</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Debet</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{currentSetting.debit_account_id?.nomor_akun}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{currentSetting.debit_account_id?.nama}</td>
+              </tr>
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Kredit</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{currentSetting.credit_account_id?.nomor_akun}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{currentSetting.credit_account_id?.nama}</td>
               </tr>
             </tbody>
           </table>

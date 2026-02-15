@@ -35,7 +35,7 @@ export default function PerkiraanManager({ estimations, profile }: { estimations
     <div className="space-y-8">
       {/* Header & Actions */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Daftar Akun (Chart of Accounts)</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Formulir Perkiraan (Chart of Accounts)</h1>
         <div className="flex gap-3">
             <button 
               onClick={() => setIsLevelListOpen(true)}

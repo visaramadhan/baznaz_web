@@ -36,7 +36,7 @@ export async function getInstallments() {
       path: 'loan_id',
       populate: { path: 'group_id', select: 'nama' }
     })
-    .sort({ nomor_transaksi: -1, tanggal_bayar: -1 });
+    .sort({ nomor_transaksi: 1 });
   return JSON.parse(JSON.stringify(installments));
 }
 
@@ -47,13 +47,11 @@ export async function createInstallment(formData: FormData) {
   const jenis_transaksi = formData.get('jenis_transaksi') as string;
   const jumlah_bayar = parseFloat(formData.get('jumlah_bayar') as string);
   const keterangan = formData.get('keterangan') as string;
+  const nomor_transaksi = formData.get('nomor_transaksi') as string;
+  const reference = (formData.get('reference_number') as string) || '';
 
   try {
-    // Generate Nomor Transaksi
     const date = new Date();
-    const yy = String(date.getFullYear() % 100).padStart(2, '0');
-    const rand4 = String(Math.floor(1000 + Math.random() * 9000));
-    const nomor_transaksi = `PA ${yy}${rand4}`; // Penerimaan Angsuran
 
     // 1. Create Installment
     const installment = await Installment.create({
@@ -87,16 +85,14 @@ export async function createInstallment(formData: FormData) {
     }
 
     // Transaction: Debit Kas/Bank (Uang masuk), Kredit Piutang (Aset berkurang)
-    const journal_no = `PA ${yy}${String(Math.floor(1000 + Math.random() * 9000))}`;
-    
     await Journal.create({
-      nomor_transaksi: journal_no,
+      nomor_transaksi,
       tanggal: new Date(),
       debit_account_id: debitAccount._id,
       credit_account_id: creditAccount._id,
       amount: jumlah_bayar,
       description: `Angsuran Pinjaman - Loan #${loan_id} - ${keterangan}`,
-      reference: installment._id.toString(),
+      reference: reference || installment._id.toString(),
     });
 
     revalidatePath('/penerimaan-angsuran');

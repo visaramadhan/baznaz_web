@@ -9,6 +9,7 @@ export default function CashOutForm({ accounts, profile }: { accounts: any[], pr
   const [error, setError] = useState('');
   const [amountDisplay, setAmountDisplay] = useState('');
   const [amountValue, setAmountValue] = useState(0);
+  const [transactionNo, setTransactionNo] = useState('');
   function onAmountChange(v: string) {
     const digits = v.replace(/\D/g, '');
     const num = digits ? Number(digits) : 0;
@@ -51,6 +52,18 @@ export default function CashOutForm({ accounts, profile }: { accounts: any[], pr
 
       <form id="cashOutForm" action={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">No. Transaksi</label>
+            <input
+              type="text"
+              name="nomor_transaksi"
+              placeholder="Contoh: KK 268067"
+              value={transactionNo}
+              onChange={(e) => setTransactionNo(e.target.value)}
+              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+              required
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
             <input
