@@ -13,8 +13,6 @@ export default async function DataKelompok() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Data Kelompok & Mitra</h1>
-      
       <GroupForm profile={profile} />
 
       <GroupList groups={groups} />

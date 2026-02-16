@@ -13,8 +13,6 @@ export default async function DataKaryawan() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Data Karyawan</h1>
-      
       <EmployeeForm profile={profile} />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">

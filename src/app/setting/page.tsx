@@ -4,8 +4,6 @@ import { UserCog, Calculator } from 'lucide-react';
 export default function SettingPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Setting</h1>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link href="/setting/profil" className="block group">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-green-500 transition-all flex flex-col items-center text-center h-full">

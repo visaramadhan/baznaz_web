@@ -9,8 +9,6 @@ export default async function SettingPerkiraanPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Setting Awal</h1>
-      
       <SettingsList accounts={accounts} settings={settings} />
     </div>
   );

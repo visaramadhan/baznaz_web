@@ -11,8 +11,6 @@ export default async function CashInPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Kas Masuk</h1>
-      
       <CashInForm accounts={accounts} profile={profile} />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">

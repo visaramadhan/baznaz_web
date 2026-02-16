@@ -13,8 +13,6 @@ export default async function PenyaluranPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Penyaluran Pinjaman</h1>
-      
       <LoanForm groups={groups} profile={profile} />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">

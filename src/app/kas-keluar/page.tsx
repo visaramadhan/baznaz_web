@@ -11,8 +11,6 @@ export default async function CashOutPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Kas Keluar</h1>
-      
       <CashOutForm accounts={accounts} profile={profile} />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">

@@ -13,8 +13,6 @@ export default async function PenerimaanAngsuranPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Penerimaan Angsuran</h1>
-      
       <InstallmentForm activeLoans={activeLoans} profile={profile} />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
