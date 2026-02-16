@@ -11,7 +11,7 @@ export default async function PosisiKeuanganPage() {
     getProfile()
   ]);
 
-  const { assets, liabilities, equity, totalPassiva } = data;
+  const { assets, liabilities, equity, otherIncome, totalPassiva } = data;
 
   const formatRupiah = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -81,11 +81,6 @@ export default async function PosisiKeuanganPage() {
               </table>
             </div>
 
-            {/* Total Assets */}
-            <div className="mt-8 border-t-2 border-gray-800 pt-2 flex justify-between font-bold text-lg">
-              <span>JUMLAH AKTIVA</span>
-              <span>{formatRupiah(assets.total)}</span>
-            </div>
           </div>
 
           {/* Right Column: Liabilities & Equity */}
@@ -121,7 +116,7 @@ export default async function PosisiKeuanganPage() {
 
             {/* Equity / Funds */}
             <div className="mb-6">
-              <h4 className="font-semibold text-gray-700 mb-2">Dana Program / Ekuitas</h4>
+              <h4 className="font-semibold text-gray-700 mb-2">Dana Program</h4>
               <table className="w-full text-sm">
                 <tbody>
                   {equity.funds.map((acc: any) => (
@@ -140,11 +135,41 @@ export default async function PosisiKeuanganPage() {
               </table>
             </div>
 
-            {/* Total Passiva */}
-            <div className="mt-8 border-t-2 border-gray-800 pt-2 flex justify-between font-bold text-lg">
-              <span>JUMLAH PASIVA</span>
-              <span>{formatRupiah(totalPassiva)}</span>
-            </div>
+            {/* Other Income / Penerimaan Lain-Lain */}
+            {otherIncome.accounts.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-700 mb-2">Penerimaan Lain-Lain</h4>
+                <table className="w-full text-sm">
+                  <tbody>
+                    {otherIncome.accounts.map((acc: any) => (
+                      <tr key={acc._id}>
+                        <td className="py-1 pl-2">{acc.nama}</td>
+                        <td className="py-1 text-right">{formatRupiah(acc.balance)}</td>
+                      </tr>
+                    ))}
+                    <tr className="font-bold border-t border-gray-300">
+                      <td className="py-2">Jumlah Penerimaan Lain-Lain</td>
+                      <td className="py-2 text-right">
+                        {formatRupiah(otherIncome.total)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+          </div>
+        </div>
+
+        {/* Total Aktiva & Pasiva sejajar */}
+        <div className="mt-8 border-t-2 border-gray-800 pt-2 grid grid-cols-1 md:grid-cols-2 gap-8 font-bold text-lg">
+          <div className="flex justify-between">
+            <span>JUMLAH AKTIVA</span>
+            <span>{formatRupiah(assets.total)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>JUMLAH PASIVA</span>
+            <span>{formatRupiah(totalPassiva)}</span>
           </div>
         </div>
       </div>

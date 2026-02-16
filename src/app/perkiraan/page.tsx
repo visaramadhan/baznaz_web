@@ -1,6 +1,7 @@
 import { getEstimations } from './actions';
 import { getProfile } from '../setting/profil/actions';
 import PerkiraanManager from './PerkiraanManager';
+import FormHeader from '@/components/FormHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,5 +11,10 @@ export default async function PerkiraanPage() {
     getProfile()
   ]);
 
-  return <PerkiraanManager estimations={estimations} profile={profile} />;
+  return (
+    <div>
+      <FormHeader title="Formulir Perkiraan (Chart of Accounts)" profile={profile} />
+      <PerkiraanManager estimations={estimations} profile={profile} />
+    </div>
+  );
 }

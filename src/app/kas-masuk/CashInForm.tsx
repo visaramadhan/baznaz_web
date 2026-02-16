@@ -60,7 +60,7 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
               placeholder="Contoh: KM 268067"
               value={transactionNo}
               onChange={(e) => setTransactionNo(e.target.value)}
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
@@ -71,7 +71,7 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
               type="date"
               name="date"
               defaultValue={new Date().toISOString().split('T')[0]}
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
@@ -82,7 +82,7 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
               type="text"
               name="reference_number"
               placeholder="Nomor Referensi (Opsional)"
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-green-500 focus:border-green-500"
             />
           </div>
           
@@ -90,7 +90,7 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
              <label className="block text-sm font-medium text-gray-700 mb-1">Masuk Ke Akun (Debit)</label>
              <select 
                name="cash_account_id" 
-               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+               className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-green-500 focus:border-green-500"
                required
              >
                <option value="">-- Pilih Akun Kas/Bank --</option>
@@ -106,7 +106,7 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
              <label className="block text-sm font-medium text-gray-700 mb-1">Dari Akun (Kredit)</label>
              <select 
                name="contra_account_id" 
-               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+               className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-green-500 focus:border-green-500"
                required
              >
                <option value="">Pilih Akun...</option>
@@ -126,7 +126,7 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
               placeholder="Rp. 0"
               value={amountDisplay}
               onChange={(e) => onAmountChange(e.target.value)}
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-green-500 focus:border-green-500"
               required
             />
             <input type="hidden" name="amount" value={amountValue} />
@@ -138,7 +138,7 @@ export default function CashInForm({ accounts, profile }: { accounts: any[], pro
           <textarea
             name="description"
             rows={3}
-            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-sm"
+            className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-green-500 focus:border-green-500"
             required
           ></textarea>
         </div>

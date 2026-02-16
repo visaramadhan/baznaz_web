@@ -58,7 +58,7 @@ export default function JournalForm({ accounts }: { accounts: any[] }) {
               placeholder="Contoh: JU 268067"
               value={transactionNo}
               onChange={(e) => setTransactionNo(e.target.value)}
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
@@ -68,7 +68,7 @@ export default function JournalForm({ accounts }: { accounts: any[] }) {
               type="date"
               name="date"
               defaultValue={new Date().toISOString().split('T')[0]}
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
@@ -79,7 +79,7 @@ export default function JournalForm({ accounts }: { accounts: any[] }) {
               type="text"
               name="reference"
               placeholder="Contoh: Bukti No. 123"
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -87,7 +87,7 @@ export default function JournalForm({ accounts }: { accounts: any[] }) {
              <label className="block text-sm font-medium text-gray-700 mb-1">Akun Debit</label>
              <select 
                name="debit_account_id" 
-               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+               className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                required
              >
                <option value="">Pilih Akun...</option>
@@ -103,7 +103,7 @@ export default function JournalForm({ accounts }: { accounts: any[] }) {
              <label className="block text-sm font-medium text-gray-700 mb-1">Akun Kredit</label>
              <select 
                name="credit_account_id" 
-               className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+               className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-blue-500 focus:border-blue-500"
                required
              >
                <option value="">Pilih Akun...</option>
@@ -123,7 +123,7 @@ export default function JournalForm({ accounts }: { accounts: any[] }) {
               placeholder="Rp. 0"
               value={amountDisplay}
               onChange={(e) => onAmountChange(e.target.value)}
-              className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
             />
             <input type="hidden" name="amount" value={amountValue} />
@@ -135,7 +135,7 @@ export default function JournalForm({ accounts }: { accounts: any[] }) {
           <textarea
             name="description"
             rows={3}
-            className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="w-full border-gray-300 rounded-md px-3 py-2.5 shadow-sm focus:ring-blue-500 focus:border-blue-500"
             required
           ></textarea>
         </div>

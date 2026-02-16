@@ -7,8 +7,10 @@ import { Estimation } from '@/models/Estimation';
 export async function getBalanceSheetData() {
   await dbConnect();
 
-  // 1. Get all Level 4 accounts (Transaction accounts)
-  const accounts = await Estimation.find({ level: 4 }).sort({ nomor_akun: 1 });
+  // 1. Get all Level 4 accounts (Transaction accounts) with Level 1 reference
+  const accounts = await Estimation.find({ level: 4 })
+    .sort({ nomor_akun: 1 })
+    .populate('ref_level_1', 'nama');
 
   // 2. Calculate balances for each account
   const accountBalances = await Promise.all(accounts.map(async (acc) => {
@@ -37,21 +39,32 @@ export async function getBalanceSheetData() {
     };
   }));
 
-  // 3. Group accounts
+  const hasRefName = (acc: any, keyword: string) => {
+    const ref = acc.ref_level_1 as any;
+    if (!ref || typeof ref !== 'object' || !ref.nama) return false;
+    return String(ref.nama).toLowerCase().includes(keyword.toLowerCase());
+  };
+
+  // 3. Group accounts menggunakan Level 1 (Aktiva, Kewajiban, Dana Program, Penerimaan Lain-Lain)
   const assets = {
-    current: accountBalances.filter(a => a.nomor_akun.startsWith('11')),
-    fixed: accountBalances.filter(a => a.nomor_akun.startsWith('12')),
+    current: accountBalances.filter(a => hasRefName(a, 'aktiva') && a.nomor_akun.startsWith('11')),
+    fixed: accountBalances.filter(a => hasRefName(a, 'aktiva') && a.nomor_akun.startsWith('12')),
     total: 0
   };
   
   const liabilities = {
-    current: accountBalances.filter(a => a.nomor_akun.startsWith('21')),
-    longTerm: accountBalances.filter(a => a.nomor_akun.startsWith('22')),
+    current: accountBalances.filter(a => hasRefName(a, 'kewajiban') && a.nomor_akun.startsWith('21')),
+    longTerm: accountBalances.filter(a => hasRefName(a, 'kewajiban') && a.nomor_akun.startsWith('22')),
     total: 0
   };
 
   const equity = {
-    funds: accountBalances.filter(a => a.nomor_akun.startsWith('3')),
+    funds: accountBalances.filter(a => hasRefName(a, 'dana program')),
+    total: 0
+  };
+
+  const otherIncome = {
+    accounts: accountBalances.filter(a => hasRefName(a, 'penerimaan lain')),
     total: 0
   };
 
@@ -59,33 +72,14 @@ export async function getBalanceSheetData() {
   assets.total = [...assets.current, ...assets.fixed].reduce((sum, acc) => sum + acc.balance, 0);
   liabilities.total = [...liabilities.current, ...liabilities.longTerm].reduce((sum, acc) => sum + acc.balance, 0);
   equity.total = equity.funds.reduce((sum, acc) => sum + acc.balance, 0);
-
-  // Note: If Balance Sheet is not balanced, it might be due to Revenue/Expense accounts (Profit/Loss) not being closed to Equity.
-  // For a simple system, we calculate Current Year Earnings (Laba/Rugi Tahun Berjalan)
-  
-  const revenues = accountBalances.filter(a => a.nomor_akun.startsWith('4'));
-  const expenses = accountBalances.filter(a => a.nomor_akun.startsWith('5'));
-  
-  const totalRevenue = revenues.reduce((sum, acc) => sum + acc.balance, 0);
-  const totalExpense = expenses.reduce((sum, acc) => sum + acc.balance, 0);
-  const currentEarnings = totalRevenue - totalExpense;
-
-  // Add Current Earnings to Equity for display
-  equity.funds.push({
-    _id: 'laba-rugi',
-    nomor_akun: '',
-    nama: 'Surplus/Defisit Tahun Berjalan',
-    level: 3,
-    saldo_normal: 'kredit',
-    balance: currentEarnings
-  } as any);
-  equity.total += currentEarnings;
+  otherIncome.total = otherIncome.accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
   return {
     assets,
     liabilities,
     equity,
-    totalPassiva: liabilities.total + equity.total
+    otherIncome,
+    totalPassiva: liabilities.total + equity.total + otherIncome.total
   };
 }
 

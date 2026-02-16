@@ -3,16 +3,16 @@
 import dbConnect from '@/lib/mongodb';
 import { Loan } from '@/models/Loan';
 import { Journal } from '@/models/Journal';
-import { Estimation } from '@/models/Estimation';
 import { Group } from '@/models/Group';
 import { GroupMember } from '@/models/GroupMember';
 import { Installment } from '@/models/Installment';
 import { Profile } from '@/models/Profile';
+import { getBalanceSheetData } from './laporan-keuangan/actions';
 
 export async function getDashboardStats() {
   await dbConnect();
 
-  // Get Profile
+  // 1. Profil lembaga
   let profile = await Profile.findOne({});
   if (!profile) {
     profile = await Profile.create({
@@ -23,35 +23,13 @@ export async function getDashboardStats() {
     });
   }
 
-  // Get Account IDs
-  const kasAccount = await Estimation.findOne({ nomor_akun: '111' });
-  const piutangAccount = await Estimation.findOne({ nomor_akun: '112' });
-  const danaProgramAccount = await Estimation.findOne({ nomor_akun: '310' }); // Assuming 310 is Dana Program/Modal
+  // 2. Dana Program (diambil dari Laporan Posisi Keuangan -> Dana Program)
+  const balanceSheet = await getBalanceSheetData();
+  const danaProgramBalance = balanceSheet.equity.total || 0;
 
-  // Helper to calculate balance
-  async function getBalance(accountId: any, type: 'debit' | 'credit' = 'debit') {
-    if (!accountId) return 0;
-    const debit = await Journal.aggregate([
-      { $match: { debit_account_id: accountId } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const credit = await Journal.aggregate([
-      { $match: { credit_account_id: accountId } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const debitTotal = debit[0]?.total || 0;
-    const creditTotal = credit[0]?.total || 0;
-    
-    return type === 'debit' ? debitTotal - creditTotal : creditTotal - debitTotal;
-  }
-
-  const kasBalance = await getBalance(kasAccount?._id, 'debit');
-  const piutangBalance = await getBalance(piutangAccount?._id, 'debit');
-  const danaProgramBalance = await getBalance(danaProgramAccount?._id, 'credit');
-
-  // Transaction Stats
+  // 3. Statistik pinjaman & angsuran berbasis data Loan dan Installment
   const totalPinjamanResult = await Loan.aggregate([
-    { $group: { _id: null, total: { $sum: '$jumlah_pinjaman' } } }
+    { $group: { _id: null, total: { $sum: '$jumlah' } } }
   ]);
   const totalPinjaman = totalPinjamanResult[0]?.total || 0;
 
@@ -60,10 +38,13 @@ export async function getDashboardStats() {
   ]);
   const totalAngsuran = totalAngsuranResult[0]?.total || 0;
 
+  const saldoPiutang = totalPinjaman - totalAngsuran;
+
+  // 4. Statistik kelompok & anggota
   const jumlahKelompok = await Group.countDocuments();
   const jumlahAnggota = await GroupMember.countDocuments();
 
-  // Recent Journals
+  // 5. Jurnal terbaru
   const recentJournals = await Journal.find({})
     .sort({ tanggal: -1 })
     .limit(5)
@@ -75,7 +56,7 @@ export async function getDashboardStats() {
     danaProgram: danaProgramBalance,
     pinjamanTersalurkan: totalPinjaman,
     totalAngsuran: totalAngsuran,
-    saldoPiutang: piutangBalance,
+    saldoPiutang,
     jumlahKelompok,
     jumlahAnggota,
     recentJournals: JSON.parse(JSON.stringify(recentJournals))
