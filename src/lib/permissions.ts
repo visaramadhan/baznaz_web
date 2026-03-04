@@ -25,5 +25,5 @@ export async function getUserPermissions() {
 
 export async function getUserRole() {
   const session = await getServerSession(authOptions);
-  return session?.user ? (session.user as any).role : null;
+  return session?.user ? session.user.role : null;
 }

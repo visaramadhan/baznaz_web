@@ -5,10 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { LayoutDashboard, Users, Briefcase, Calculator, BookOpen, Settings, CreditCard, DollarSign, UserCog, ArrowDownCircle, ArrowUpCircle, PieChart } from 'lucide-react';
 import clsx from 'clsx';
-import { useEffect, useState } from 'react';
-import { getRoles } from '@/app/setting/roles/actions';
 
-// Map menu paths to permission keys
 const MENU_PERMISSION_MAP: Record<string, string> = {
   '/': 'dashboard',
   '/data-karyawan': 'data-karyawan',
@@ -41,47 +38,17 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    async function fetchPermissions() {
-      if (session?.user) {
-        // We can fetch permissions from an API route or server action if not in session
-        // For simplicity, let's assume we fetch role details
-        try {
-            const userRole = (session.user as any).role;
-            if (userRole) {
-                // Fetch role permissions
-                // Note: Ideally we should have an API for this to avoid direct DB calls in client (which is impossible)
-                // or pass it via props. But since Sidebar is in Layout, let's use a server action wrapper if possible,
-                // or just fetch all roles and find the matching one.
-                const roles = await getRoles();
-                const role = roles.find((r: any) => r.name === userRole);
-                if (role) {
-                    setPermissions(role.permissions);
-                }
-            }
-        } catch (e) {
-            console.error(e);
-        }
-      }
-      setLoading(false);
-    }
-    fetchPermissions();
-  }, [session]);
-
-  const userRole = session?.user ? (session.user as any).role : '';
+  const userRole = session?.user?.role || '';
   const userName = session?.user?.name || 'User';
-  const userEmail = session?.user?.email || '';
+  const permissions = session?.user?.permissions || [];
 
   // Filter menu items based on permissions
   const filteredMenu = menuItems.filter(item => {
-    if (loading) return false; // Hide until loaded? Or show all skeleton? Let's hide.
-    if (!permissions.length) return false; // No permissions loaded yet
-    
-    if (permissions.includes('all')) return true; // Admin
+    if (status === 'loading') return false;
+    if (!permissions.length) return false;
+    if (permissions.includes('all')) return true;
 
     const requiredPermission = MENU_PERMISSION_MAP[item.href];
     return permissions.includes(requiredPermission);
@@ -93,7 +60,7 @@ export default function Sidebar() {
         <h1 className="text-xl font-bold">BAZNAS Microfinance</h1>
       </div>
       <nav className="flex-1 overflow-y-auto py-4">
-        {loading ? (
+        {status === 'loading' ? (
             <div className="px-4 text-slate-500 text-sm">Memuat menu...</div>
         ) : (
             <ul className="space-y-1 px-2">
