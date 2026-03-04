@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { UserCog, Calculator } from 'lucide-react';
+import { UserCog, Calculator, ShieldCheck } from 'lucide-react';
 
 export default function SettingPage() {
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/setting/profil" className="block group">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-green-500 transition-all flex flex-col items-center text-center h-full">
             <div className="bg-green-100 p-4 rounded-full mb-4 group-hover:bg-green-200 transition-colors">
@@ -13,6 +13,18 @@ export default function SettingPage() {
             <h2 className="text-xl font-bold text-gray-800 mb-2">Setting Profil</h2>
             <p className="text-gray-500 text-sm">
               Atur identitas lembaga, nama, alamat, telepon, dan logo aplikasi.
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/setting/roles" className="block group">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-purple-500 transition-all flex flex-col items-center text-center h-full">
+            <div className="bg-purple-100 p-4 rounded-full mb-4 group-hover:bg-purple-200 transition-colors">
+              <ShieldCheck className="w-8 h-8 text-purple-700" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Manajemen Role</h2>
+            <p className="text-gray-500 text-sm">
+              Atur hak akses pengguna dan manajemen role (Admin/Staff).
             </p>
           </div>
         </Link>

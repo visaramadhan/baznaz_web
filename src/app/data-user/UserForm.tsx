@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { createUser } from './actions';
 
-export default function UserForm() {
+export default function UserForm({ roles }: { roles: any[] }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   async function clientAction(formData: FormData) {
@@ -35,8 +35,10 @@ export default function UserForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700">Role</label>
           <select name="role" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500">
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
+            <option value="">-- Pilih Role --</option>
+            {roles.map((role) => (
+              <option key={role._id} value={role.name}>{role.name}</option>
+            ))}
           </select>
         </div>
         

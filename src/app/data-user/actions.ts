@@ -3,10 +3,10 @@
 import dbConnect from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { revalidatePath } from 'next/cache';
-import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
-function hashPassword(password: string) {
-  return crypto.createHash('sha256').update(password).digest('hex');
+async function hashPassword(password: string) {
+  return await bcrypt.hash(password, 10);
 }
 
 export async function getUsers() {
@@ -28,7 +28,7 @@ export async function createUser(formData: FormData) {
       return { success: false, error: 'Email sudah terdaftar' };
     }
 
-    const hashedPassword = hashPassword(password);
+    const hashedPassword = await hashPassword(password);
 
     await User.create({
       name,
@@ -54,7 +54,7 @@ export async function updateUser(id: string, formData: FormData) {
   try {
     const updateData: any = { name, email, role };
     if (password) {
-      updateData.password = hashPassword(password);
+      updateData.password = await hashPassword(password);
     }
 
     await User.findByIdAndUpdate(id, updateData);
