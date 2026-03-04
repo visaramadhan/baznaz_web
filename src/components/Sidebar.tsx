@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { LayoutDashboard, Users, Briefcase, Calculator, BookOpen, Settings, CreditCard, DollarSign, UserCog, ArrowDownCircle, ArrowUpCircle, PieChart } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { LayoutDashboard, Users, Briefcase, Calculator, BookOpen, Settings, CreditCard, DollarSign, UserCog, ArrowDownCircle, ArrowUpCircle, PieChart, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 
 const MENU_PERMISSION_MAP: Record<string, string> = {
@@ -88,7 +88,7 @@ export default function Sidebar() {
         )}
       </nav>
       <div className="border-t border-slate-800 p-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mb-3">
           <div className="h-8 w-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold">
             {userName.substring(0, 2).toUpperCase()}
           </div>
@@ -97,6 +97,13 @@ export default function Sidebar() {
             <p className="text-xs text-slate-400 truncate">{userRole}</p>
           </div>
         </div>
+        <button
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          className="flex w-full items-center gap-2 rounded-md bg-red-600/10 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-600/20 hover:text-red-400 transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          Keluar
+        </button>
       </div>
     </div>
   );
