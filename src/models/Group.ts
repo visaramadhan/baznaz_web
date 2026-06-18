@@ -5,6 +5,7 @@ export interface IGroup extends Document {
   nama: string;
   alamat: string;
   no_telp: string;
+  saldo_awal: number;
 }
 
 const GroupSchema: Schema = new Schema({
@@ -12,6 +13,7 @@ const GroupSchema: Schema = new Schema({
   nama: { type: String, required: true },
   alamat: { type: String, required: true },
   no_telp: { type: String, required: true },
+  saldo_awal: { type: Number, default: 0 },
 }, { timestamps: true });
 
 export const Group: Model<IGroup> = mongoose.models.Group || mongoose.model<IGroup>('Group', GroupSchema);

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileText, PieChart, TrendingUp, Book, Scale } from 'lucide-react';
+import { FileText, PieChart, TrendingUp, Book, Scale, Wallet } from 'lucide-react';
 import { getProfile } from '../setting/profil/actions';
 import FormHeader from '@/components/FormHeader';
 
@@ -93,6 +93,18 @@ export default async function LaporanKeuanganPage() {
             <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Perubahan Dana</h2>
             <p className="text-gray-500 text-sm">
               Menampilkan arus penerimaan dan penyaluran dana zakat, infak, dan amil.
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/laporan-keuangan/arus-kas" className="block group">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-transparent hover:border-emerald-500 transition-all flex flex-col items-center text-center h-full">
+            <div className="bg-emerald-100 p-4 rounded-full mb-4 group-hover:bg-emerald-200 transition-colors">
+              <Wallet className="w-8 h-8 text-emerald-700" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Laporan Arus Kas</h2>
+            <p className="text-gray-500 text-sm">
+              Menampilkan rincian penerimaan dan pengeluaran kas yang terhubung dengan laporan posisi keuangan.
             </p>
           </div>
         </Link>

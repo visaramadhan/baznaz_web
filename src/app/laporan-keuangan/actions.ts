@@ -4,6 +4,133 @@ import dbConnect from '@/lib/mongodb';
 import { Journal } from '@/models/Journal';
 import { Estimation } from '@/models/Estimation';
 
+const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+const endOfToday = new Date();
+endOfToday.setHours(23, 59, 59, 999);
+
+const normalizeText = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const includesKeyword = (value: string, ...keywords: string[]) => {
+  const normalizedValue = normalizeText(value);
+  return keywords.some((keyword) => normalizedValue.includes(normalizeText(keyword)));
+};
+
+const getReferenceNames = (acc: any) => {
+  const refs = [acc.ref_level_1, acc.ref_level_2, acc.ref_level_3]
+    .map((ref: any) => (ref && typeof ref === 'object' ? ref.nama : ''))
+    .filter(Boolean);
+
+  return refs;
+};
+
+const hasReferenceName = (acc: any, ...keywords: string[]) => {
+  const refs = getReferenceNames(acc);
+  return refs.some((name) => includesKeyword(String(name), ...keywords));
+};
+
+const isDepreciationName = (name: string) =>
+  includesKeyword(name, 'penyusutan', 'akumulasi penyusutan', 'susut');
+
+const isNonHalalName = (name: string) =>
+  includesKeyword(name, 'non halal', 'nonhalal');
+
+const isBankProfitAccount = (acc: any) =>
+  includesKeyword(acc.nama || '', 'bagi hasil bank', 'bunga bank') || String(acc.nomor_akun || '').startsWith('45');
+
+const isFixedAssetAccount = (acc: any) =>
+  hasReferenceName(acc, 'aktiva') &&
+  String(acc.nomor_akun || '').startsWith('12') &&
+  !isDepreciationName(acc.nama || '');
+
+const isFixedAssetDepreciationAccount = (acc: any) =>
+  hasReferenceName(acc, 'aktiva') &&
+  String(acc.nomor_akun || '').startsWith('12') &&
+  isDepreciationName(acc.nama || '');
+
+const isCashLikeAccount = (acc: any) =>
+  hasReferenceName(acc, 'aktiva') &&
+  String(acc.nomor_akun || '').startsWith('11') &&
+  includesKeyword(acc.nama || '', 'kas', 'bank');
+
+async function getJournalTotals(accountId: any, tanggalFilter?: Record<string, any>) {
+  const baseMatch = {
+    nomor_transaksi: { $not: /^PA / },
+    ...(tanggalFilter ? { tanggal: tanggalFilter } : {}),
+  };
+
+  const [debitResult, creditResult] = await Promise.all([
+    Journal.aggregate([
+      { $match: { ...baseMatch, debit_account_id: accountId } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]),
+    Journal.aggregate([
+      { $match: { ...baseMatch, credit_account_id: accountId } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]),
+  ]);
+
+  return {
+    debit: debitResult[0]?.total || 0,
+    credit: creditResult[0]?.total || 0,
+  };
+}
+
+function calculateBalance(acc: any, totalDebit: number, totalCredit: number) {
+  if (acc.saldo_normal === 'debet') {
+    return totalDebit - totalCredit;
+  }
+
+  return totalCredit - totalDebit;
+}
+
+function mergeAccountsByName(accounts: any[]) {
+  const merged = new Map<string, any>();
+
+  accounts.forEach((acc) => {
+    const nama = isBankProfitAccount(acc) ? 'Bagi Hasil Bank' : acc.nama;
+    const existing = merged.get(nama);
+
+    if (existing) {
+      existing.balance += acc.balance;
+      return;
+    }
+
+    merged.set(nama, {
+      _id: acc._id,
+      nama,
+      balance: acc.balance,
+    });
+  });
+
+  return Array.from(merged.values());
+}
+
+function getRelatedDepreciationAccounts(assetAcc: any, depreciationAccounts: any[]) {
+  const assetRefLevel3Id =
+    assetAcc.ref_level_3 && typeof assetAcc.ref_level_3 === 'object'
+      ? String(assetAcc.ref_level_3._id)
+      : '';
+
+  const assetName = normalizeText(assetAcc.nama || '');
+
+  return depreciationAccounts.filter((depAcc) => {
+    const depRefLevel3Id =
+      depAcc.ref_level_3 && typeof depAcc.ref_level_3 === 'object'
+        ? String(depAcc.ref_level_3._id)
+        : '';
+
+    if (assetRefLevel3Id && depRefLevel3Id && assetRefLevel3Id === depRefLevel3Id) {
+      return true;
+    }
+
+    const depreciationName = normalizeText(depAcc.nama || '')
+      .replace(normalizeText('akumulasi penyusutan'), '')
+      .replace(normalizeText('penyusutan'), '');
+
+    return Boolean(depreciationName) && (assetName.includes(depreciationName) || depreciationName.includes(assetName));
+  });
+}
+
 export async function getBalanceSheetData() {
   await dbConnect();
 
@@ -14,24 +141,10 @@ export async function getBalanceSheetData() {
 
   // 2. Calculate balances for each account
   const accountBalances = await Promise.all(accounts.map(async (acc) => {
-    const debitResult = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const creditResult = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-
-    const totalDebit = (debitResult[0]?.total || 0) + (acc.debet || 0);
-    const totalCredit = (creditResult[0]?.total || 0) + (acc.kredit || 0);
-
-    let balance = 0;
-    if (acc.saldo_normal === 'debet') {
-      balance = totalDebit - totalCredit;
-    } else {
-      balance = totalCredit - totalDebit;
-    }
+    const totals = await getJournalTotals(acc._id);
+    const totalDebit = totals.debit + (acc.debet || 0);
+    const totalCredit = totals.credit + (acc.kredit || 0);
+    const balance = calculateBalance(acc, totalDebit, totalCredit);
 
     return {
       ...acc.toObject(),
@@ -39,40 +152,50 @@ export async function getBalanceSheetData() {
     };
   }));
 
-  const hasRefName = (acc: any, keyword: string) => {
-    const ref = acc.ref_level_1 as any;
-    if (!ref || typeof ref !== 'object' || !ref.nama) return false;
-    return String(ref.nama).toLowerCase().includes(keyword.toLowerCase());
-  };
-
   // 3. Group accounts menggunakan Level 1 (Aktiva, Kewajiban, Dana Program, Penerimaan Lain-Lain)
+  const fixedAssetsFromReport = await getAssetChangesData();
   const assets = {
-    current: accountBalances.filter(a => hasRefName(a, 'aktiva') && a.nomor_akun.startsWith('11')),
-    fixed: accountBalances.filter(a => hasRefName(a, 'aktiva') && a.nomor_akun.startsWith('12')),
+    current: accountBalances.filter((acc) => hasReferenceName(acc, 'aktiva') && String(acc.nomor_akun).startsWith('11')),
+    fixed: fixedAssetsFromReport.length > 0
+      ? fixedAssetsFromReport.map((row: any) => ({
+          _id: row._id,
+          nama: row.nama,
+          balance: row.saldoAkhir,
+        }))
+      : accountBalances.filter((acc) => isFixedAssetAccount(acc)).map((acc) => ({
+          _id: acc._id,
+          nama: acc.nama,
+          balance: acc.balance,
+        })),
     total: 0
   };
   
   const liabilities = {
-    current: accountBalances.filter(a => hasRefName(a, 'kewajiban') && a.nomor_akun.startsWith('21')),
-    longTerm: accountBalances.filter(a => hasRefName(a, 'kewajiban') && a.nomor_akun.startsWith('22')),
+    current: accountBalances.filter((acc) => hasReferenceName(acc, 'kewajiban') && String(acc.nomor_akun).startsWith('21')),
+    longTerm: accountBalances.filter((acc) => hasReferenceName(acc, 'kewajiban') && String(acc.nomor_akun).startsWith('22')),
     total: 0
   };
 
   const equity = {
-    funds: accountBalances.filter(a => hasRefName(a, 'dana program')),
+    funds: accountBalances.filter((acc) => hasReferenceName(acc, 'dana program') && !isNonHalalName(acc.nama || '')),
     total: 0
   };
 
+  const bankProfitTotal = accountBalances
+    .filter((acc) => isBankProfitAccount(acc))
+    .reduce((sum, acc) => sum + acc.balance, 0);
+
   const otherIncome = {
-    accounts: accountBalances.filter(a => hasRefName(a, 'penerimaan lain')),
-    total: 0
+    accounts: bankProfitTotal !== 0
+      ? [{ _id: 'bank-profit', nama: 'Bagi Hasil Bank', balance: bankProfitTotal }]
+      : [],
+    total: bankProfitTotal
   };
 
   // 4. Calculate group totals
   assets.total = [...assets.current, ...assets.fixed].reduce((sum, acc) => sum + acc.balance, 0);
   liabilities.total = [...liabilities.current, ...liabilities.longTerm].reduce((sum, acc) => sum + acc.balance, 0);
   equity.total = equity.funds.reduce((sum, acc) => sum + acc.balance, 0);
-  otherIncome.total = otherIncome.accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
   return {
     assets,
@@ -86,52 +209,62 @@ export async function getBalanceSheetData() {
 export async function getAssetChangesData() {
   await dbConnect();
 
-  // Find accounts related to ZISWAF funds
-  // We look for accounts starting with 3 (Dana)
-  const fundAccounts = await Estimation.find({ 
-    level: 4, 
-    nomor_akun: { $regex: /^3/ } 
-  }).sort({ nomor_akun: 1 });
+  const accounts = await Estimation.find({
+    level: 4,
+    nomor_akun: { $regex: /^12/ }
+  })
+    .sort({ nomor_akun: 1 })
+    .populate('ref_level_1', 'nama')
+    .populate('ref_level_2', 'nama')
+    .populate('ref_level_3', 'nama');
 
-  const reportData = await Promise.all(fundAccounts.map(async (acc) => {
-    // For this report, we ideally need a date range. 
-    // Assuming "Current Year" for now.
-    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-    
-    // 1. Saldo Awal (Balance before start of year)
-    const initialDebit = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, tanggal: { $lt: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const initialCredit = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, tanggal: { $lt: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    
-    const saldoAwal = ((initialCredit[0]?.total || 0) + (acc.kredit || 0)) - ((initialDebit[0]?.total || 0) + (acc.debet || 0)); // Assuming Credit normal for Funds
+  const fixedAssetAccounts = accounts.filter((acc: any) => isFixedAssetAccount(acc));
+  const depreciationAccounts = accounts.filter((acc: any) => isFixedAssetDepreciationAccount(acc));
 
-    // 2. Penambahan (Credit during period)
-    const addition = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, tanggal: { $gte: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const penambahan = addition[0]?.total || 0;
+  const reportData = await Promise.all(fixedAssetAccounts.map(async (acc: any) => {
+    const initialTotals = await getJournalTotals(acc._id, { $lt: startOfYear });
+    const periodTotals = await getJournalTotals(acc._id, { $gte: startOfYear, $lte: endOfToday });
 
-    // 3. Pengurangan (Debit during period)
-    const deduction = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, tanggal: { $gte: startOfYear }, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const pengurangan = deduction[0]?.total || 0;
+    const saldoAwalBruto = calculateBalance(
+      acc,
+      initialTotals.debit + (acc.debet || 0),
+      initialTotals.credit + (acc.kredit || 0)
+    );
 
-    // 4. Saldo Akhir
-    const saldoAkhir = saldoAwal + penambahan - pengurangan;
+    const penambahan = periodTotals.debit;
+    const pengurangan = periodTotals.credit;
+
+    const relatedDepreciationAccounts = getRelatedDepreciationAccounts(acc, depreciationAccounts);
+
+    const depreciationData = await Promise.all(relatedDepreciationAccounts.map(async (depAcc: any) => {
+      const depInitialTotals = await getJournalTotals(depAcc._id, { $lt: startOfYear });
+      const depPeriodTotals = await getJournalTotals(depAcc._id, { $gte: startOfYear, $lte: endOfToday });
+
+      const saldoAwal = calculateBalance(
+        depAcc,
+        depInitialTotals.debit + (depAcc.debet || 0),
+        depInitialTotals.credit + (depAcc.kredit || 0)
+      );
+
+      const penyusutanPeriode = Math.max(0, calculateBalance(depAcc, depPeriodTotals.debit, depPeriodTotals.credit));
+
+      return {
+        saldoAwal,
+        penyusutanPeriode,
+      };
+    }));
+
+    const saldoAwalPenyusutan = depreciationData.reduce((sum, item) => sum + item.saldoAwal, 0);
+    const penyusutan = depreciationData.reduce((sum, item) => sum + item.penyusutanPeriode, 0);
+    const saldoAwal = saldoAwalBruto - saldoAwalPenyusutan;
+    const saldoAkhir = saldoAwal + penambahan - pengurangan - penyusutan;
 
     return {
       ...acc.toObject(),
       saldoAwal,
       penambahan,
       pengurangan,
+      penyusutan,
       saldoAkhir
     };
   }));
@@ -142,24 +275,6 @@ export async function getAssetChangesData() {
 export async function getFundChangesData() {
   await dbConnect();
   
-  // Helper to categorize accounts
-  const categorize = (acc: any) => {
-    // Priority 1: Check Account Number Prefix (Level 2 Parent)
-    if (acc.nomor_akun.startsWith('42') || acc.nomor_akun.startsWith('51')) return 'zakat';
-    if (acc.nomor_akun.startsWith('43') || acc.nomor_akun.startsWith('52')) return 'infak';
-    if (acc.nomor_akun.startsWith('41') || acc.nomor_akun.startsWith('44') || acc.nomor_akun.startsWith('53')) return 'amil';
-    if (acc.nomor_akun.startsWith('45') || acc.nomor_akun.startsWith('54')) return 'nonhalal';
-
-    // Priority 2: Fallback to Name Check (Legacy support)
-    const name = acc.nama.toLowerCase();
-    if (name.includes('zakat')) return 'zakat';
-    if (name.includes('infak') || name.includes('infaq') || name.includes('sedekah') || name.includes('shadaqah')) return 'infak';
-    if (name.includes('amil')) return 'amil';
-    if (name.includes('nonhalal') || name.includes('non halal') || name.includes('bunga')) return 'nonhalal';
-    
-    return 'amil';
-  };
-
   // Get all revenue (4) and expense (5) accounts
   const accounts = await Estimation.find({
     level: 4,
@@ -170,55 +285,129 @@ export async function getFundChangesData() {
   }).sort({ nomor_akun: 1 });
 
   const accountBalances = await Promise.all(accounts.map(async (acc) => {
-    const debitResult = await Journal.aggregate([
-      { $match: { debit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-    const creditResult = await Journal.aggregate([
-      { $match: { credit_account_id: acc._id, nomor_transaksi: { $not: /^PA / } } },
-      { $group: { _id: null, total: { $sum: '$amount' } } }
-    ]);
-
-    const totalDebit = (debitResult[0]?.total || 0) + (acc.debet || 0);
-    const totalCredit = (creditResult[0]?.total || 0) + (acc.kredit || 0);
-
-    // For revenue (Kredit normal), balance = Credit - Debit
-    // For expense (Debet normal), balance = Debit - Credit
-    let balance = 0;
-    if (acc.saldo_normal === 'debet') {
-      balance = totalDebit - totalCredit;
-    } else {
-      balance = totalCredit - totalDebit;
-    }
+    const totals = await getJournalTotals(acc._id);
+    const totalDebit = totals.debit + (acc.debet || 0);
+    const totalCredit = totals.credit + (acc.kredit || 0);
 
     return {
       ...acc.toObject(),
-      balance,
-      category: categorize(acc)
+      balance: calculateBalance(acc, totalDebit, totalCredit)
     };
   }));
 
-  // Group by category
+  const amilRevenueAccounts = mergeAccountsByName(
+    accountBalances.filter((acc) =>
+      String(acc.nomor_akun).startsWith('41') ||
+      String(acc.nomor_akun).startsWith('44') ||
+      isBankProfitAccount(acc) ||
+      includesKeyword(acc.nama || '', 'amil')
+    )
+  );
+
+  const amilExpenseAccounts = mergeAccountsByName(
+    accountBalances.filter((acc) =>
+      String(acc.nomor_akun).startsWith('53') ||
+      includesKeyword(acc.nama || '', 'amil')
+    )
+  );
+
   const funds: any = {
-    zakat: { revenues: [], expenses: [], surplus: 0 },
-    infak: { revenues: [], expenses: [], surplus: 0 },
-    amil: { revenues: [], expenses: [], surplus: 0 },
-    nonhalal: { revenues: [], expenses: [], surplus: 0 }
+    amil: {
+      revenues: amilRevenueAccounts,
+      expenses: amilExpenseAccounts,
+      surplus:
+        amilRevenueAccounts.reduce((sum: number, acc: any) => sum + acc.balance, 0) -
+        amilExpenseAccounts.reduce((sum: number, acc: any) => sum + acc.balance, 0),
+    },
   };
 
-  accountBalances.forEach(acc => {
-    const type = acc.nomor_akun.startsWith('4') ? 'revenues' : 'expenses';
-    funds[acc.category][type].push(acc);
-  });
-
-  // Calculate surplus for each fund
-  Object.keys(funds).forEach(key => {
-    const rev = funds[key].revenues.reduce((sum: number, a: any) => sum + a.balance, 0);
-    const exp = funds[key].expenses.reduce((sum: number, a: any) => sum + a.balance, 0);
-    funds[key].surplus = rev - exp;
-  });
-
   return funds;
+}
+
+export async function getCashFlowData() {
+  await dbConnect();
+
+  const accounts = await Estimation.find({ level: 4 })
+    .sort({ nomor_akun: 1 })
+    .populate('ref_level_1', 'nama')
+    .populate('ref_level_2', 'nama')
+    .populate('ref_level_3', 'nama');
+
+  const cashAccounts = accounts.filter((acc: any) => isCashLikeAccount(acc));
+  const cashAccountIds = cashAccounts.map((acc: any) => acc._id);
+
+  const cashBalanceData = await Promise.all(cashAccounts.map(async (acc: any) => {
+    const initialTotals = await getJournalTotals(acc._id, { $lt: startOfYear });
+    const finalTotals = await getJournalTotals(acc._id, { $lte: endOfToday });
+
+    return {
+      openingBalance: calculateBalance(
+        acc,
+        initialTotals.debit + (acc.debet || 0),
+        initialTotals.credit + (acc.kredit || 0)
+      ),
+      endingBalance: calculateBalance(
+        acc,
+        finalTotals.debit + (acc.debet || 0),
+        finalTotals.credit + (acc.kredit || 0)
+      ),
+    };
+  }));
+
+  const [receiptJournals, disbursementJournals] = await Promise.all([
+    Journal.find({
+      debit_account_id: { $in: cashAccountIds },
+      credit_account_id: { $nin: cashAccountIds },
+      tanggal: { $gte: startOfYear, $lte: endOfToday },
+      nomor_transaksi: { $not: /^PA / }
+    })
+      .populate('debit_account_id', 'nama nomor_akun')
+      .populate('credit_account_id', 'nama nomor_akun')
+      .sort({ tanggal: 1, createdAt: 1 }),
+    Journal.find({
+      credit_account_id: { $in: cashAccountIds },
+      debit_account_id: { $nin: cashAccountIds },
+      tanggal: { $gte: startOfYear, $lte: endOfToday },
+      nomor_transaksi: { $not: /^PA / }
+    })
+      .populate('debit_account_id', 'nama nomor_akun')
+      .populate('credit_account_id', 'nama nomor_akun')
+      .sort({ tanggal: 1, createdAt: 1 }),
+  ]);
+
+  const penerimaan = receiptJournals.map((journal: any) => ({
+    _id: journal._id,
+    tanggal: journal.tanggal,
+    nomor_transaksi: journal.nomor_transaksi,
+    keterangan: journal.description || journal.credit_account_id?.nama || '-',
+    lawanAkun: journal.credit_account_id?.nama || '-',
+    jumlah: journal.amount,
+  }));
+
+  const pengeluaran = disbursementJournals.map((journal: any) => ({
+    _id: journal._id,
+    tanggal: journal.tanggal,
+    nomor_transaksi: journal.nomor_transaksi,
+    keterangan: journal.description || journal.debit_account_id?.nama || '-',
+    lawanAkun: journal.debit_account_id?.nama || '-',
+    jumlah: journal.amount,
+  }));
+
+  const totalPenerimaan = penerimaan.reduce((sum, row) => sum + row.jumlah, 0);
+  const totalPengeluaran = pengeluaran.reduce((sum, row) => sum + row.jumlah, 0);
+  const saldoAwal = cashBalanceData.reduce((sum, row) => sum + row.openingBalance, 0);
+  const saldoAkhir = saldoAwal + totalPenerimaan - totalPengeluaran;
+  const saldoKasPosisiKeuangan = cashBalanceData.reduce((sum, row) => sum + row.endingBalance, 0);
+
+  return {
+    penerimaan,
+    pengeluaran,
+    totalPenerimaan,
+    totalPengeluaran,
+    saldoAwal,
+    saldoAkhir,
+    saldoKasPosisiKeuangan,
+  };
 }
 
 export async function getGeneralLedgerData(accountId: string, startDate: string, endDate: string) {

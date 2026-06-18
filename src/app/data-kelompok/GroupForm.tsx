@@ -39,6 +39,10 @@ export default function GroupForm({ profile }: { profile: any }) {
           <label className="block text-sm font-medium text-gray-700">No. Telp Kelompok</label>
           <input type="text" name="no_telp" required className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Saldo Awal</label>
+          <input type="number" name="saldo_awal" min="0" step="0.01" defaultValue="0" className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500" />
+        </div>
         <div className="md:col-span-2">
           <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
             Simpan Data

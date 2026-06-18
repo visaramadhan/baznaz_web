@@ -42,17 +42,21 @@ export default async function PosisiKeuanganPage() {
             {/* Current Assets */}
             <div className="mb-6">
               <h4 className="font-semibold text-gray-700 mb-2">Aktiva Lancar</h4>
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-auto" />
+                  <col className="w-44" />
+                </colgroup>
                 <tbody>
                   {assets.current.map((acc: any) => (
                     <tr key={acc._id}>
-                      <td className="py-1 pl-2">{acc.nama}</td>
-                      <td className="py-1 text-right">{formatRupiah(acc.balance)}</td>
+                      <td className="py-1.5 pl-2 pr-4">{acc.nama}</td>
+                      <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                     </tr>
                   ))}
                   <tr className="font-bold border-t border-gray-300">
-                    <td className="py-2">Jumlah Aktiva Lancar</td>
-                    <td className="py-2 text-right">
+                    <td className="py-2.5 pr-4">Jumlah Aktiva Lancar</td>
+                    <td className="py-2.5 text-right">
                       {formatRupiah(assets.current.reduce((sum: number, acc: any) => sum + acc.balance, 0))}
                     </td>
                   </tr>
@@ -63,17 +67,21 @@ export default async function PosisiKeuanganPage() {
             {/* Fixed Assets */}
             <div className="mb-6">
               <h4 className="font-semibold text-gray-700 mb-2">Aktiva Tetap</h4>
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-auto" />
+                  <col className="w-44" />
+                </colgroup>
                 <tbody>
                   {assets.fixed.map((acc: any) => (
                     <tr key={acc._id}>
-                      <td className="py-1 pl-2">{acc.nama}</td>
-                      <td className="py-1 text-right">{formatRupiah(acc.balance)}</td>
+                      <td className="py-1.5 pl-2 pr-4">{acc.nama}</td>
+                      <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                     </tr>
                   ))}
                   <tr className="font-bold border-t border-gray-300">
-                    <td className="py-2">Jumlah Aktiva Tetap</td>
-                    <td className="py-2 text-right">
+                    <td className="py-2.5 pr-4">Jumlah Aktiva Tetap</td>
+                    <td className="py-2.5 text-right">
                       {formatRupiah(assets.fixed.reduce((sum: number, acc: any) => sum + acc.balance, 0))}
                     </td>
                   </tr>
@@ -90,23 +98,27 @@ export default async function PosisiKeuanganPage() {
             {/* Liabilities */}
             <div className="mb-6">
               <h4 className="font-semibold text-gray-700 mb-2">Kewajiban</h4>
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-auto" />
+                  <col className="w-44" />
+                </colgroup>
                 <tbody>
                   {liabilities.current.map((acc: any) => (
                     <tr key={acc._id}>
-                      <td className="py-1 pl-2">{acc.nama}</td>
-                      <td className="py-1 text-right">{formatRupiah(acc.balance)}</td>
+                      <td className="py-1.5 pl-2 pr-4">{acc.nama}</td>
+                      <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                     </tr>
                   ))}
                   {liabilities.longTerm.map((acc: any) => (
                     <tr key={acc._id}>
-                      <td className="py-1 pl-2">{acc.nama}</td>
-                      <td className="py-1 text-right">{formatRupiah(acc.balance)}</td>
+                      <td className="py-1.5 pl-2 pr-4">{acc.nama}</td>
+                      <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                     </tr>
                   ))}
                   <tr className="font-bold border-t border-gray-300">
-                    <td className="py-2">Jumlah Kewajiban</td>
-                    <td className="py-2 text-right">
+                    <td className="py-2.5 pr-4">Jumlah Kewajiban</td>
+                    <td className="py-2.5 text-right">
                       {formatRupiah(liabilities.total)}
                     </td>
                   </tr>
@@ -117,17 +129,21 @@ export default async function PosisiKeuanganPage() {
             {/* Equity / Funds */}
             <div className="mb-6">
               <h4 className="font-semibold text-gray-700 mb-2">Dana Program</h4>
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col className="w-auto" />
+                  <col className="w-44" />
+                </colgroup>
                 <tbody>
                   {equity.funds.map((acc: any) => (
                     <tr key={acc._id}>
-                      <td className="py-1 pl-2">{acc.nama}</td>
-                      <td className="py-1 text-right">{formatRupiah(acc.balance)}</td>
+                      <td className="py-1.5 pl-2 pr-4">{acc.nama}</td>
+                      <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                     </tr>
                   ))}
                   <tr className="font-bold border-t border-gray-300">
-                    <td className="py-2">Jumlah Dana Program</td>
-                    <td className="py-2 text-right">
+                    <td className="py-2.5 pr-4">Jumlah Dana Program</td>
+                    <td className="py-2.5 text-right">
                       {formatRupiah(equity.total)}
                     </td>
                   </tr>
@@ -139,17 +155,21 @@ export default async function PosisiKeuanganPage() {
             {otherIncome.accounts.length > 0 && (
               <div className="mb-6">
                 <h4 className="font-semibold text-gray-700 mb-2">Penerimaan Lain-Lain</h4>
-                <table className="w-full text-sm">
+                <table className="w-full table-fixed text-sm">
+                  <colgroup>
+                    <col className="w-auto" />
+                    <col className="w-44" />
+                  </colgroup>
                   <tbody>
                     {otherIncome.accounts.map((acc: any) => (
                       <tr key={acc._id}>
-                        <td className="py-1 pl-2">{acc.nama}</td>
-                        <td className="py-1 text-right">{formatRupiah(acc.balance)}</td>
+                        <td className="py-1.5 pl-2 pr-4">{acc.nama}</td>
+                        <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                       </tr>
                     ))}
                     <tr className="font-bold border-t border-gray-300">
-                      <td className="py-2">Jumlah Penerimaan Lain-Lain</td>
-                      <td className="py-2 text-right">
+                      <td className="py-2.5 pr-4">Jumlah Penerimaan Lain-Lain</td>
+                      <td className="py-2.5 text-right">
                         {formatRupiah(otherIncome.total)}
                       </td>
                     </tr>

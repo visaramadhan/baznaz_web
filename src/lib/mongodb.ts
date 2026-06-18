@@ -1,17 +1,7 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  // Fallback for debugging if env var is not loaded
-  if (process.env.NODE_ENV === 'development') {
-     console.warn('MONGODB_URI not found in process.env, using hardcoded fallback for dev.');
-  }
-  // throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-}
-
-// Hardcode for now to unblock if env fails
-const FINAL_URI = MONGODB_URI || "mongodb+srv://visaramadhan28_db_user:kASTyRgEMUzLB85a@cluster0.eifm61e.mongodb.net/?appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI?.trim() || '';
+const FINAL_URI = MONGODB_URI;
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -39,6 +29,12 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
+    // #region debug-point A:db-connect-start
+    (()=>{const fs=require('fs');let u='http://127.0.0.1:7777/event',s='login-mongodb-dns';try{const e=fs.readFileSync('.dbg/login-mongodb-dns.env','utf8');u=e.match(/DEBUG_SERVER_URL=(.+)/)?.[1]||u;s=e.match(/DEBUG_SESSION_ID=(.+)/)?.[1]||s}catch{}fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:s,runId:'pre-fix',hypothesisId:'A',location:'src/lib/mongodb.ts:dbConnect',msg:'[DEBUG] opening mongoose connection',data:{hasEnv:Boolean(process.env.MONGODB_URI),uriHost:(FINAL_URI.match(/@([^/?]+)/)?.[1]||'')},ts:Date.now()})}).catch(()=>{});})();
+    // #endregion
+    if (!FINAL_URI) {
+      throw new Error('MONGODB_URI tidak tersedia pada runtime server');
+    }
     const opts = {
       bufferCommands: false,
     };

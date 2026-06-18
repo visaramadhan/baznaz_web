@@ -19,14 +19,8 @@ export default async function PerubahanDanaPage() {
     }).format(value);
   };
 
-  const sections = [
-    { key: 'zakat', title: 'DANA ZAKAT' },
-    { key: 'infak', title: 'DANA INFAK / SEDEKAH' },
-    { key: 'amil', title: 'DANA AMIL' },
-    { key: 'nonhalal', title: 'DANA NONHALAL' },
-  ];
-
-  const totalSurplus = Object.values(funds).reduce((sum: number, f: any) => sum + f.surplus, 0);
+  const sections = [{ key: 'amil', title: 'DANA AMIL' }];
+  const totalSurplus = funds.amil?.surplus || 0;
 
   return (
     <div className="space-y-6">
@@ -53,24 +47,28 @@ export default async function PerubahanDanaPage() {
                 {/* Penerimaan */}
                 <div className="mb-4">
                   <h4 className="font-semibold text-gray-700 mb-2 ml-2">Penerimaan</h4>
-                  <table className="w-full text-sm">
+                  <table className="w-full table-fixed text-sm">
+                    <colgroup>
+                      <col className="w-auto" />
+                      <col className="w-52" />
+                    </colgroup>
                     <tbody>
                       {data.revenues.length > 0 ? (
                         data.revenues.map((acc: any) => (
                           <tr key={acc._id}>
-                            <td className="py-1 pl-6">{acc.nama}</td>
-                            <td className="py-1 text-right w-48">{formatRupiah(acc.balance)}</td>
+                            <td className="py-1.5 pl-6 pr-4">{acc.nama}</td>
+                            <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td className="py-1 pl-6 italic text-gray-500">- Tidak ada transaksi -</td>
-                          <td className="py-1 text-right w-48">{formatRupiah(0)}</td>
+                          <td className="py-1.5 pl-6 pr-4 italic text-gray-500">- Tidak ada transaksi -</td>
+                          <td className="py-1.5 text-right">{formatRupiah(0)}</td>
                         </tr>
                       )}
                       <tr className="font-semibold">
-                        <td className="py-2 pl-4">Jumlah Penerimaan</td>
-                        <td className="py-2 text-right border-t border-gray-300">
+                        <td className="py-2.5 pl-4 pr-4">Jumlah Penerimaan</td>
+                        <td className="py-2.5 text-right border-t border-gray-300">
                           {formatRupiah(data.revenues.reduce((s: number, a: any) => s + a.balance, 0))}
                         </td>
                       </tr>
@@ -81,24 +79,28 @@ export default async function PerubahanDanaPage() {
                 {/* Penyaluran */}
                 <div className="mb-4">
                   <h4 className="font-semibold text-gray-700 mb-2 ml-2">Penyaluran</h4>
-                  <table className="w-full text-sm">
+                  <table className="w-full table-fixed text-sm">
+                    <colgroup>
+                      <col className="w-auto" />
+                      <col className="w-52" />
+                    </colgroup>
                     <tbody>
                       {data.expenses.length > 0 ? (
                         data.expenses.map((acc: any) => (
                           <tr key={acc._id}>
-                            <td className="py-1 pl-6">{acc.nama}</td>
-                            <td className="py-1 text-right w-48">{formatRupiah(acc.balance)}</td>
+                            <td className="py-1.5 pl-6 pr-4">{acc.nama}</td>
+                            <td className="py-1.5 text-right">{formatRupiah(acc.balance)}</td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td className="py-1 pl-6 italic text-gray-500">- Tidak ada transaksi -</td>
-                          <td className="py-1 text-right w-48">{formatRupiah(0)}</td>
+                          <td className="py-1.5 pl-6 pr-4 italic text-gray-500">- Tidak ada transaksi -</td>
+                          <td className="py-1.5 text-right">{formatRupiah(0)}</td>
                         </tr>
                       )}
                       <tr className="font-semibold">
-                        <td className="py-2 pl-4">Jumlah Penyaluran</td>
-                        <td className="py-2 text-right border-t border-gray-300">
+                        <td className="py-2.5 pl-4 pr-4">Jumlah Penyaluran</td>
+                        <td className="py-2.5 text-right border-t border-gray-300">
                           {formatRupiah(data.expenses.reduce((s: number, a: any) => s + a.balance, 0))}
                         </td>
                       </tr>

@@ -41,10 +41,15 @@ export default function SettingItem({ title, type, accounts, currentSetting }: S
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
           <label className="md:col-span-2 text-sm font-medium text-gray-700 uppercase">Debet</label>
           <div className="md:col-span-10">
-            <select name="debit_account" required className="w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+            <select
+              name="debit_account"
+              required
+              defaultValue={currentSetting?.debit_account_id?._id || ''}
+              className="w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50"
+            >
               <option value="">Pilih</option>
               {accounts.map((acc) => (
-                <option key={acc._id} value={acc._id} selected={currentSetting?.debit_account_id?._id === acc._id}>
+                <option key={acc._id} value={acc._id}>
                   {acc.nomor_akun} - {acc.nama}
                 </option>
               ))}
@@ -55,10 +60,15 @@ export default function SettingItem({ title, type, accounts, currentSetting }: S
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
           <label className="md:col-span-2 text-sm font-medium text-gray-700 uppercase">Kredit</label>
           <div className="md:col-span-10">
-            <select name="credit_account" required className="w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+            <select
+              name="credit_account"
+              required
+              defaultValue={currentSetting?.credit_account_id?._id || ''}
+              className="w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50"
+            >
               <option value="">Pilih</option>
               {accounts.map((acc) => (
-                <option key={acc._id} value={acc._id} selected={currentSetting?.credit_account_id?._id === acc._id}>
+                <option key={acc._id} value={acc._id}>
                   {acc.nomor_akun} - {acc.nama}
                 </option>
               ))}

@@ -32,11 +32,19 @@ export default async function PerubahanAsetPage() {
           Periode 1 Januari s.d. {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
-        <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+        <table className="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200">
+          <colgroup>
+            <col className="w-72" />
+            <col className="w-36" />
+            <col className="w-36" />
+            <col className="w-36" />
+            <col className="w-36" />
+            <col className="w-36" />
+          </colgroup>
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
-                Keterangan Dana
+                Keterangan Aset
               </th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                 Saldo Awal
@@ -47,6 +55,9 @@ export default async function PerubahanAsetPage() {
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
                 Pengurangan
               </th>
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                Penyusutan
+              </th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Saldo Akhir
               </th>
@@ -55,8 +66,8 @@ export default async function PerubahanAsetPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {data.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
-                  Belum ada data dana kelolaan (Akun dengan awalan '3').
+                <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                  Belum ada data aset tetap yang dapat ditampilkan.
                 </td>
               </tr>
             ) : (
@@ -73,6 +84,9 @@ export default async function PerubahanAsetPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600 border-r">
                     ({formatRupiah(row.pengurangan)})
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-amber-600 border-r">
+                    ({formatRupiah(row.penyusutan)})
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
                     {formatRupiah(row.saldoAkhir)}
@@ -93,6 +107,9 @@ export default async function PerubahanAsetPage() {
                 </td>
                 <td className="px-6 py-4 text-sm text-right text-red-700 border-r">
                   ({formatRupiah(data.reduce((sum: number, r: any) => sum + r.pengurangan, 0))})
+                </td>
+                <td className="px-6 py-4 text-sm text-right text-amber-700 border-r">
+                  ({formatRupiah(data.reduce((sum: number, r: any) => sum + r.penyusutan, 0))})
                 </td>
                 <td className="px-6 py-4 text-sm text-right text-gray-900">
                   {formatRupiah(data.reduce((sum: number, r: any) => sum + r.saldoAkhir, 0))}

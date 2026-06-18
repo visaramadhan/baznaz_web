@@ -10,10 +10,18 @@ interface Group {
   nama: string;
   alamat: string;
   no_telp: string;
+  saldo_awal?: number;
 }
 
 export default function GroupList({ groups }: { groups: Group[] }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const formatRupiah = (value: number) =>
+    new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(value || 0);
 
   async function handleDelete(id: string) {
     if (confirm('Apakah Anda yakin ingin menghapus kelompok ini?')) {
@@ -42,13 +50,14 @@ export default function GroupList({ groups }: { groups: Group[] }) {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kelompok</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Telepon</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Saldo Awal</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {groups.length === 0 ? (
             <tr>
-              <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+              <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                 Belum ada data kelompok.
               </td>
             </tr>
@@ -56,12 +65,13 @@ export default function GroupList({ groups }: { groups: Group[] }) {
             groups.map((group) => (
               <tr key={group._id}>
                 {editingId === group._id ? (
-                  <td colSpan={5} className="px-6 py-4">
-                    <form action={(formData) => handleUpdate(group._id, formData)} className="flex gap-2 items-center">
+                  <td colSpan={6} className="px-6 py-4">
+                    <form action={(formData) => handleUpdate(group._id, formData)} className="flex gap-2 items-center flex-wrap">
                       <input name="nomor" defaultValue={(group as any).nomor} className="border p-1 rounded w-20" placeholder="No." required />
                       <input name="nama" defaultValue={group.nama} className="border p-1 rounded w-32" placeholder="Nama" required />
                       <input name="alamat" defaultValue={group.alamat} className="border p-1 rounded w-48" placeholder="Alamat" required />
                       <input name="no_telp" defaultValue={group.no_telp} className="border p-1 rounded w-32" placeholder="No. Telp" required />
+                      <input name="saldo_awal" type="number" min="0" step="0.01" defaultValue={group.saldo_awal || 0} className="border p-1 rounded w-36" placeholder="Saldo Awal" required />
                       <div className="flex gap-1">
                         <button type="submit" className="bg-blue-500 text-white px-2 py-1 rounded text-xs">Simpan</button>
                         <button type="button" onClick={() => setEditingId(null)} className="bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs">Batal</button>
@@ -74,6 +84,7 @@ export default function GroupList({ groups }: { groups: Group[] }) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{group.nama}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{group.alamat}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{group.no_telp}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">{formatRupiah(group.saldo_awal || 0)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link 
                         href={`/data-kelompok/${group._id}`}

@@ -17,6 +17,7 @@ export async function createGroup(formData: FormData) {
   const nama = formData.get('nama') as string;
   const alamat = formData.get('alamat') as string;
   const no_telp = formData.get('no_telp') as string;
+  const saldo_awal = parseFloat(formData.get('saldo_awal') as string || '0');
 
   try {
     await Group.create({
@@ -24,6 +25,7 @@ export async function createGroup(formData: FormData) {
       nama,
       alamat,
       no_telp,
+      saldo_awal,
     });
     
     revalidatePath('/data-kelompok');
@@ -41,6 +43,7 @@ export async function updateGroup(id: string, formData: FormData) {
   const nama = formData.get('nama') as string;
   const alamat = formData.get('alamat') as string;
   const no_telp = formData.get('no_telp') as string;
+  const saldo_awal = parseFloat(formData.get('saldo_awal') as string || '0');
 
   try {
     await Group.findByIdAndUpdate(id, {
@@ -48,6 +51,7 @@ export async function updateGroup(id: string, formData: FormData) {
       nama,
       alamat,
       no_telp,
+      saldo_awal,
     });
     
     revalidatePath('/data-kelompok');

@@ -7,17 +7,32 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 
 export async function getProfile() {
-  await dbConnect();
-  let profile = await Profile.findOne({});
-  if (!profile) {
-    profile = await Profile.create({
+  // #region debug-point B:get-profile-entry
+  (()=>{const fs=require('fs');let u='http://127.0.0.1:7777/event',s='login-mongodb-dns';try{const e=fs.readFileSync('.dbg/login-mongodb-dns.env','utf8');u=e.match(/DEBUG_SERVER_URL=(.+)/)?.[1]||u;s=e.match(/DEBUG_SESSION_ID=(.+)/)?.[1]||s}catch{}fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:s,runId:'pre-fix',hypothesisId:'B',location:'src/app/setting/profil/actions.ts:getProfile',msg:'[DEBUG] getProfile called',data:{ts:new Date().toISOString()},ts:Date.now()})}).catch(()=>{});})();
+  // #endregion
+  try {
+    await dbConnect();
+    let profile = await Profile.findOne({});
+    if (!profile) {
+      profile = await Profile.create({
+        nama: 'BAZNAS Microfinance Desa',
+        alamat: 'Kota Bukittinggi',
+        telp: '',
+        logo: ''
+      });
+    }
+    return JSON.parse(JSON.stringify(profile));
+  } catch (error) {
+    // #region debug-point C:get-profile-fallback
+    (()=>{const fs=require('fs');let u='http://127.0.0.1:7777/event',s='login-mongodb-dns';try{const e=fs.readFileSync('.dbg/login-mongodb-dns.env','utf8');u=e.match(/DEBUG_SERVER_URL=(.+)/)?.[1]||u;s=e.match(/DEBUG_SESSION_ID=(.+)/)?.[1]||s}catch{}fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:s,runId:'post-fix',hypothesisId:'C',location:'src/app/setting/profil/actions.ts:getProfile',msg:'[DEBUG] getProfile fallback profile used',data:{error:error instanceof Error?error.message:String(error)},ts:Date.now()})}).catch(()=>{});})();
+    // #endregion
+    return {
       nama: 'BAZNAS Microfinance Desa',
       alamat: 'Kota Bukittinggi',
       telp: '',
       logo: ''
-    });
+    };
   }
-  return JSON.parse(JSON.stringify(profile));
 }
 
 export async function updateProfile(formData: FormData) {
